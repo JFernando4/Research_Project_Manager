@@ -11,6 +11,7 @@ from src.util import turn_off_debugging_processes, get_random_seeds, access_dict
 from src.util.neural_networks import layer, add_noise_to_weights, init_weights_kaiming, get_optimizer, scale_weights
 from src.problems import CifarDataSet
 from src.util.data_preprocessing_and_transformations import ToTensor, RandomGaussianNoise, RandomErasing
+from src.file_management.file_and_directory_management import save_experiment_config_file
 os.chdir(ROOT)
 
 
@@ -77,6 +78,7 @@ class NonStationaryCifarExperiment(Experiment):
         self.network_size = access_dict(exp_params, key="network_size", default="large", val_type=str)
         self.basic_summaries = access_dict(exp_params, key="basic_summaries", default=False, val_type=bool)
         self.image_norm_type = access_dict(exp_params, key="image_norm_type", default="minus-one-to-one", val_type=str)
+        save_experiment_config_file(results_dir, exp_params, run_index)
 
         """ Define indicator variables and static functions """
         self.l1_reg = (self.lasso_coeff > 0.0)
