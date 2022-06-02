@@ -1,0 +1,136 @@
+import os
+import numpy as np
+import json
+
+
+def get_experiment_dir(exp_dictionary: dict, relevant_variables: list, result_path: str, experiment_class_name: str):
+    """
+    Creates a path for an experiment according to the relevant hyper-parameters of the experiment
+    :param exp_dictionary: (dict) dictionary with all the experiment variables
+    :param relevant_variables: (list of strings) keys used for identifying the defining variables of the experiment.
+                               For example, in a supervised learning experiment, the relevant hyperparameters could
+                               be the type of optimizer and the stepsize
+    :param result_path: (str) path to the directory in which to store results
+    :param experiment_class_name: (str) name of the experiment broader class of the experiment
+    :return: path
+    """
+
+    exp_name = []
+    for relevant_var in relevant_variables:
+        exp_name.append(relevant_var + "-" + str(exp_dictionary[relevant_var]))
+
+    exp_path = os.path.join(result_path, experiment_class_name, "_".join(exp_name))
+    return exp_path
+
+
+def read_json_file(filepath: str):
+    """
+    Read a json file and returns its data as a dictionary
+    :param filepath: (str) path to the file
+    :return: a dictionary with the data in the json file
+    """
+
+    with open(filepath, mode="r") as json_file:
+        file_data = json.load(json_file)
+    return file_data
+
+
+def save_experiment_results(results_dir: str, run_index: int, **kwargs):
+    """
+    Stores the results of an experiment. Each keyword argument correspond to a different type of result. The function
+    creates a new directory for each result and store each different result in the corresponding directory in a file 
+    named index-j.npy, for j = results_index
+    :param results_dir: (str) path to the directory to save the results to
+    :param run_index: (int) index of the run
+    :param kwargs: each different keyword argument corresponds to a different result
+    """
+    if len(kwargs) == 0:
+        print("There's nothing to save!")
+        return
+    save_index(results_dir, run_index=run_index)
+    save_results_dict(results_dir, results_dict=kwargs, run_index=run_index)
+
+
+def save_results_dict(results_dir: str, results_dict: dict, run_index=0):
+    """
+    Creates an npy file for each key in the dictionary. If the file already exists, it appeds to the file.
+    :param results_dir: (str) path to the directory to save the results to
+    :param results_dict: (dict) each key is going to be used as a directory name, use descriptive names
+    :param run_index: (int) index of the run
+    """
+    for results_name, results in results_dict.items():
+        temp_path = os.path.join(results_dir, results_name)
+        os.makedirs(temp_path, exist_ok=True)
+        np.save(os.path.join(temp_path, "index-" + str(run_index) + ".npy"), results)
+        print("{0} was successfully saved!".format(results_name))
+
+
+def save_index(results_dir: str, run_index: int):
+    """
+    Stores the index of an experiment
+    :param results_dir: (str) path to the directory to save the results to
+    :param run_index: (dict) each key is going to be used as a directory name, use descriptive names
+    """
+    idx_file_path = os.path.join(results_dir, "experiment_indices.npy")
+    if os.path.isfile(idx_file_path):
+        index_array = np.load(idx_file_path)
+        index_array = np.append(index_array, run_index)
+    else:
+        index_array = np.array(run_index)
+
+    np.save(idx_file_path, index_array)
+    print("Index successfully saved!")
+
+
+def write_slurm_file(slurm_config: dict, exps_config: list, exp_wrapper: str, exp_dir: str, exp_name: str, job_index=0):
+    """
+    Creates a temporary slurm file for an experiment
+    :param slurm_config: slurm parameters for running the experiment
+    :param exps_config: list of experiment parameters
+    :param exp_wrapper: path to a file that can run the experiment by passing a json file string to it
+    :param exp_dir: directory to save all the data about the experiment
+    :param exp_name: name of the experiment
+    :param job_index: run number
+    :return: path to the file
+    """
+
+    job_path = os.path.join(exp_dir, "job_{0}.sh".format(job_index))
+
+    with open(job_path, mode="w") as job_file:
+        job_file.writelines("#!/bin/bash\n")
+        job_file.writelines("#SBATCH --job-name={0}_{1}\n".format(slurm_config["job_name"], job_index))
+        output_path = os.path.join(slurm_config["output_dir"], slurm_config["output_filename"])
+        job_file.writelines("#SBATCH --output={0}_{1}.out\n".format(output_path, job_index))
+        job_file.writelines("#SBATCH --time={0}\n".format(slurm_config["time"]))
+        job_file.writelines("#SBATCH --mem={0}\n".format(slurm_config["mem"]))
+        job_file.writelines("#SBATCH --mail-type={0}\n".format(slurm_config["mail-type"]))
+        job_file.writelines("#SBATCH --mail-user={0}\n".format(slurm_config["mail-user"]))
+        job_file.writelines("#SBATCH --cpus-per-task={0}\n".format(slurm_config["cpus-per-task"]))
+        job_file.writelines("#SBATCH --account={0}\n".format(slurm_config["account"]))
+        job_file.writelines("#SBATCH --gpus-per-node={0}\n".format(slurm_config["gpus-per-node"]))
+
+        job_file.writelines("export PYTHONPATH={0}\n".format(slurm_config["main_dir"]))
+        job_file.writelines("source {0}/venv/bin/activate\n".format(slurm_config["main_dir"]))
+
+        for config in exps_config:
+            json_string = json.dumps(config).replace('"', '\\"')
+            job_file.writelines('python3 {0} --json_string "{1}" --exp_dir {2} --exp_name {3}\n\n'.format(
+                exp_wrapper, json_string, exp_dir, exp_name))
+
+        job_file.writelines("deactivate\n")
+
+    return job_path
+
+
+def save_experiment_config_file(results_dir: str, exp_params: dict, run_index: int):
+    """
+    Stores the configuration file of an experiment
+    :param results_dir: (str) where to store the experiment results to
+    :param exp_params: (dict) dictionary detailing all the parameters relevant for running the experiment
+    :param run_index: (int) index of the run
+    """
+    temp_path = os.path.join(results_dir, "config_files")
+    os.makedirs(temp_path, exist_ok=True)
+    with open(os.path.join(temp_path, "index-" + str(run_index) + ".json"), mode="w") as json_file:
+        json.dump(obj=exp_params, fp=json_file, indent=1)
+    print("Config file successfully stored!")

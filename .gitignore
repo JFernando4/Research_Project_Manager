@@ -1,0 +1,4 @@
+# Project exclude paths
+/venv/
+/src/function_approximators/problems/supervised_learning/
+/src/function_approximators/problems/
