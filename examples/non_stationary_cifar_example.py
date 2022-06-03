@@ -133,7 +133,7 @@ class NonStationaryCifarExperiment(Experiment):
         results_to_plot = [self.results_dict["avg_accuracy_per_cp"], self.results_dict["avg_loss_per_cp"],
                            self.results_dict["test_accuracy_per_cp"]]
         for res in results_to_plot:
-            moving_average = np.convolve(res, np.ones(N) / N, mode="valid")
+            moving_average = np.convolve(res.cpu(), np.ones(N) / N, mode="valid")
             plt.plot(np.arange(moving_average.size), moving_average); plt.show(), plt.close()
 
     def print_training_progress(self, curr_cp):
