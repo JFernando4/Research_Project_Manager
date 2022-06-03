@@ -62,7 +62,7 @@ class RandomGaussianNoise(object):
         image_dims = sample["image"].shape
         mean = torch.zeros(image_dims) + self.mu
         stddev = torch.zeros(image_dims) + self.sigma
-        new_sample["image"] = sample["image"] + torch.normal(mean, stddev)
+        new_sample["image"] = sample["image"] + torch.normal(mean, stddev).to(sample["image"].device)
 
         return new_sample
 
