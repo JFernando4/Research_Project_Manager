@@ -165,12 +165,13 @@ class NonStationaryCifarExperiment(Experiment):
         if self.basic_summaries: return     # skip this if only storing basic summaries
 
         if self.current_obs % self.checkpoint == 0:
+            curr_cp = (self.current_obs // self.checkpoint) - 1
             self.net.eval()
             outputs = self.net.forward(test_data["image"], return_activations=False)
             labels = test_data["label"]
             test_accuracy = torch.mean((torch.argmax(outputs, dim=1) == torch.argmax(labels, dim=1)).double()).item()
+            self.results_dict["test_accuracy_per_cp"][curr_cp] += test_accuracy
             self.net.train()
-            self.results_dict["test_accuracy_per_cp"] += test_accuracy
 
     # ---- For manipulating the data ---- #
     def get_data_set(self, train=True):
@@ -257,8 +258,8 @@ class NonStationaryCifarExperiment(Experiment):
                 # get a new random permutation and update the train and test data
                 new_transformation = transforms.Compose([
                     ToTensor(),
-                    RandomGaussianNoise(mean=0, stddev=np.random.normal(0.4,0.1)),
-                    RandomErasing(scale=(np.random.normal(0.24, 0.01),np.random.normal(0.32, 0.01)), ratio=(1, 2))
+                    RandomGaussianNoise(mean=0, stddev=np.random.normal(0.4, 0.1)),
+                    RandomErasing(scale=(np.random.normal(0.24, 0.01), np.random.normal(0.32, 0.01)), ratio=(1, 2))
                 ])
                 train_data.set_transformation(new_transformation)
 
