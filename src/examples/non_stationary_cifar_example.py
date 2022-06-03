@@ -175,7 +175,8 @@ class NonStationaryCifarExperiment(Experiment):
     # ---- For manipulating the data ---- #
     def get_data_set(self, train=True):
         mnist_data_set = CifarDataSet(root_dir=self.data_path, train=train, transform=ToTensor(), device=self.device,
-                                      image_normalization=self.image_norm_type, label_preprocessing="one-hot")
+                                      image_normalization=self.image_norm_type, label_preprocessing="one-hot",
+                                      use_torch=True)
         batch_size = self.batch_size if train else self.test_data_size
         return mnist_data_set, DataLoader(mnist_data_set, batch_size, shuffle=True, num_workers=0, pin_memory=False)
 
