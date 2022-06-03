@@ -101,8 +101,8 @@ class CifarDataSet(CustomDataSet):
         self.data["labels"] = torch.tensor(new, dtype=torch.float32) if self.use_torch else np.float32(new)
 
         if self.use_torch:
-            self.data["data"].to(device=self.device)
-            self.data["labels"].to(device=self.device)
+            self.data["data"] = self.data["data"].to(device=self.device)
+            self.data["labels"] = self.data["labels"].to(device=self.device)
 
     def partition_data(self):
         """
