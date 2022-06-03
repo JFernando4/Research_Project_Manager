@@ -276,7 +276,8 @@ def main():
     import time
 
     initial_time = time.perf_counter()
-    exp = NonStationaryCifarExperiment(exp_params, ROOT, 0, True)
+    results_dir = os.path.dirname(os.path.abspath(__file__))
+    exp = NonStationaryCifarExperiment(exp_params, results_dir, 0, True)
     exp.run()
     final_time = time.perf_counter()
     print("The running time in minutes is: {0:.2f}".format((final_time - initial_time) / 60))
