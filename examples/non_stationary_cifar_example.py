@@ -25,7 +25,7 @@ def get_cifar_architecture(network_size: str, num_classes: int, drop_prob=0.0):
     """
     units_first = {"small": 16, "medium": 32, "large": 64, "extra-large": 256}[network_size]
     units_second = {"small": 8, "medium": 16, "large": 32, "extra-large": 128}[network_size]
-    units_feedforward = {"small": 256, "medium": 512, "large": 1024, "extra-large": 2048}[network_size]
+    units_feedforward = {"small": 256, "medium": 512, "large": 1024, "extra-large": 4096}[network_size]
 
     architecture = [
         layer(type="conv2d",    parameters=(3, units_first, (3,3), (1,1)),              gate="relu"),   # conv 1
@@ -258,27 +258,29 @@ class NonStationaryCifarExperiment(Experiment):
                 # get a new random permutation and update the train and test data
                 new_transformation = transforms.Compose([
                     ToTensor(),
-                    RandomGaussianNoise(mean=0, stddev=np.random.normal(0.4, 0.1)),
-                    RandomErasing(scale=(np.random.normal(0.24, 0.01), np.random.normal(0.32, 0.01)), ratio=(1, 2))
+                    RandomGaussianNoise(mean=0, stddev=np.random.normal(0.5, 0.1)),
+                    RandomErasing(scale=(np.random.normal(0.2, 0.025), np.random.normal(0.4, 0.025)),
+                                  ratio=(np.random.uniform(0.1, 1), np.random.uniform(1.1, 2)))
                 ])
                 train_data.set_transformation(new_transformation)
 
 
 def main():
     exp_params = {
-        "optimizer": "sgd",
+        "optimizer": "adam",
         "stepsize": 0.01,
         "plot_results": True,
-        "epochs": 100,
+        "epochs": 200,
         "checkpoint": 5,
         "data_path": CIFAR_DATA_PATH,
-        "batch_size": 4
+        "batch_size": 4,
+        "network_size": "large"
     }
     import time
 
     initial_time = time.perf_counter()
-    results_dir = os.path.dirname(os.path.abspath(__file__))
-    exp = NonStationaryCifarExperiment(exp_params, results_dir, 0, True)
+    results_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "non_stationary_cifar_results")
+    exp = NonStationaryCifarExperiment(exp_params, results_dir, 1, True)
     exp.run()
     final_time = time.perf_counter()
     print("The running time in minutes is: {0:.2f}".format((final_time - initial_time) / 60))
