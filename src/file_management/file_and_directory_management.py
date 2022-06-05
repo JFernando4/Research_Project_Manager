@@ -2,7 +2,7 @@ import os
 import numpy as np
 import json
 
-from src.file_management import get_dims_and_dtype_of_npy_file
+from src.file_management.experiment_management import get_dims_and_dtype_of_npy_file
 
 
 def get_experiment_dir(exp_dictionary: dict, relevant_variables: list, result_path: str, experiment_class_name: str):
