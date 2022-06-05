@@ -99,3 +99,17 @@ def create_parameter_values(values, param_creation_type="fixed"):
 
     else:
         ValueError("Invalid case for generating new values: {0}".format(values[0]))
+
+
+def override_slurm_config(slurm_dict: dict, experiment_config: dict):
+    """
+    Overrides slurm parameters based on the contains of experiment_config
+    Use this when a specific experiment requires different resources from the one specified in the slurm json file
+    :param slurm_dict: a dictionary containing the parameters for slurm
+    :param experiment_config: a dictionary containing the experiment parameters
+    :return: None
+    """
+    if "slurm_parameters" in experiment_config.keys():
+        assert isinstance(experiment_config["slurm_parameters"], dict)
+        for k, v in experiment_config["slurm_parameters"].items():
+            slurm_dict[k] = v
