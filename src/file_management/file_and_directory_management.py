@@ -2,6 +2,8 @@ import os
 import numpy as np
 import json
 
+from src.file_management import get_dims_and_dtype_of_npy_file
+
 
 def get_experiment_dir(exp_dictionary: dict, relevant_variables: list, result_path: str, experiment_class_name: str):
     """
@@ -23,18 +25,8 @@ def get_experiment_dir(exp_dictionary: dict, relevant_variables: list, result_pa
     return exp_path
 
 
-def read_json_file(filepath: str):
-    """
-    Read a json file and returns its data as a dictionary
-    :param filepath: (str) path to the file
-    :return: a dictionary with the data in the json file
-    """
-
-    with open(filepath, mode="r") as json_file:
-        file_data = json.load(json_file)
-    return file_data
-
-
+# ---*---*---*---*---*---*---*---*---  Barbed Wire ---*---*---*---*---*---*---*---*--- #
+# ---*---*---*---*---*---*--- For saving and writing files ---*---*---*---*---*---*--- #
 def save_experiment_results(results_dir: str, run_index: int, **kwargs):
     """
     Stores the results of an experiment. Each keyword argument correspond to a different type of result. The function
@@ -134,3 +126,137 @@ def save_experiment_config_file(results_dir: str, exp_params: dict, run_index: i
     with open(os.path.join(temp_path, "index-" + str(run_index) + ".json"), mode="w") as json_file:
         json.dump(obj=exp_params, fp=json_file, indent=1)
     print("Config file successfully stored!")
+
+
+# ---*---*---*---*---*---*--- For loading files ---*---*---*---*---*---*--- #
+def read_json_file(filepath: str):
+    """
+    Read a json file and returns its data as a dictionary
+    :param filepath: (str) path to the file
+    :return: a dictionary with the data in the json file
+    """
+
+    with open(filepath, mode="r") as json_file:
+        file_data = json.load(json_file)
+    return file_data
+
+
+def load_experiment_results(results_dir: str, results_name: str):
+    results_path = os.path.join(results_dir, results_name)
+    filename_list = os.listdir(results_path)
+
+    num_runs = len(filename_list)
+    results_dims, results_dtype = get_dims_and_dtype_of_npy_file(os.path.join(results_path, filename_list[0]))
+
+    results_array = np.zeros((num_runs, ) + results_dims, dtype=results_dtype)
+    for i, filename in enumerate(filename_list):
+        temp_file_path = os.path.join(results_path, filename)
+        with open(temp_file_path, mode="rb") as temp_file:
+            temp_results = np.load(temp_file)
+        results_array[i] += temp_results
+    return results_array
+
+
+# ---*---*---*---*---*---*--- For aggregating files ---*---*---*---*---*---*--- #
+def bin_1d_array(array_1d: np.ndarray, bin_size: int):
+    """
+    Bins 1-dimensional arrays into bins of size bin_size
+    :param array_1d: (np.ndarray) array to be binned
+    :param bin_size: (int) size of each different bin
+    :return: (np.ndarray) binned array
+    """
+    assert len(array_1d.shape) == 1
+    return np.average(array_1d.reshape(-1, bin_size), axis=1)
+
+
+def bin_results(results: np.ndarray, bin_size: int, bin_axis=1):
+    """
+    makes bins by adding bin_size consecutive entries in the array over the second axis of the 2D array
+    :param results: a 2D numpy array
+    :param bin_size: (int) number of consecutive entries to add together
+    :param bin_axis: (int) axis along which to bin the results
+    :return: binned 2D array of sahpe (results.shape[0], results.shape[1] // bin_size)
+    """
+    if bin_size == 0:
+        return results
+    assert results.shape[bin_axis] % bin_size == 0
+
+    binned_results = np.apply_along_axis(lambda x: bin_1d_array(x, bin_size), axis=bin_axis, arr=results)
+    return binned_results
+
+
+def aggregate_results(results_dir, results_name, bin_size, bin_axis=1):
+    """
+    loads and bins results
+    :param results_dir: (str) path to results dir
+    :param results_name: (str) name of results
+    :param bin_size: (int) size of bin
+    :param bin_axis: (int) axis along which to bin the results
+    :return: np.ndarray of binned results
+    """
+    results = load_experiment_results(results_dir, results_name)
+    binned_results = bin_results(results, bin_size, bin_axis=bin_axis)
+    return binned_results
+
+
+def aggregate_large_results(results_dir, results_name, bin_size, bin_axis=0, save_results=True):
+    """
+    Same as aggregate_results but for larger files
+    :param results_dir: (str) path to results directory
+    :param results_name: (str) name of results
+    :param bin_size: (int) size of bin
+    :param bin_axis: (int) axis along which to bin the results
+    :param save_results: (bool) whether to save the results or not
+    :return:
+    """
+    results_path = os.path.join(results_dir, results_name)
+    file_names = os.listdir(results_path)
+    num_runs = len(file_names)
+    dims, _ = get_dims_and_dtype_of_npy_file(os.path.join(results_path, file_names[0]))
+    if bin_size == 0:
+        binned_results_dims = (num_runs, dims[bin_axis])
+    else:
+        assert dims[bin_axis] % bin_size == 0
+        binned_results_dims = (num_runs, dims[bin_axis] // bin_size)
+    if len(dims) > 1: binned_results_dims += tuple(np.delete(dims, bin_axis))
+    binned_results = np.zeros(binned_results_dims, dtype=np.float32)
+
+    for i, name in enumerate(file_names):
+        temp_file_path = os.path.join(results_path, file_names[i])
+        temp_results = np.load(temp_file_path)
+        temp_binned_results = bin_results(temp_results, bin_size, bin_axis)
+        binned_results[i] += temp_binned_results
+
+    if save_results:
+        np.save(os.path.join(results_dir, results_name + "_bin-" + str(bin_size) + ".npy"), binned_results)
+
+    return binned_results
+
+
+def get_first_of_each_epoch(results_dir: str, results_name: str, epoch_length=60000, save_results=True,
+                            include_last_entry=False):
+
+    results_path = os.path.join(results_dir, results_name)
+    file_names = os.listdir(results_path)
+    num_runs = len(file_names)
+    dims, _ = get_dims_and_dtype_of_npy_file(os.path.join(results_path, file_names[0]))
+    assert len(dims) <= 2                   # must be a 2D or 1D array
+    assert dims[0] % epoch_length == 0      # must be divisible by epoch length
+
+    second_dim = dims[0] // epoch_length if not include_last_entry else dims[0] // epoch_length + 1
+    new_dims = (num_runs, second_dim)
+    if len(dims) > 1: new_dims += (dims[1], )
+
+    new_results = np.zeros(new_dims, dtype=np.float32)
+
+    for i, name in enumerate(file_names):
+        temp_file_path = os.path.join(results_path, file_names[i])
+        temp_results = np.load(temp_file_path)
+        new_entry = temp_results[::epoch_length]
+        if include_last_entry:
+            new_entry = np.vstack((new_entry, temp_results[-1]))
+        new_results[i] += new_entry
+    if save_results:
+        np.save(os.path.join(results_dir, results_name + "_first-of-epoch.npy"), new_results)
+
+    return new_results

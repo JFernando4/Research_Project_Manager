@@ -1,7 +1,6 @@
 import os
 import numpy as np
-import json
-# from project files
+
 
 def get_missing_indices(results_dir, sample_size):
     """
@@ -20,22 +19,6 @@ def get_missing_indices(results_dir, sample_size):
         return np.setdiff1d(indices, current_indices)
     else:
         return np.arange(sample_size, dtype=np.int64)
-
-
-def load_experiment_results(results_dir: str, results_name: str):
-    results_path = os.path.join(results_dir, results_name)
-    filename_list = os.listdir(results_path)
-
-    num_runs = len(filename_list)
-    results_dims, results_dtype = get_dims_and_dtype_of_npy_file(os.path.join(results_path, filename_list[0]))
-
-    results_array = np.zeros((num_runs, ) + results_dims, dtype=results_dtype)
-    for i, filename in enumerate(filename_list):
-        temp_file_path = os.path.join(results_path, filename)
-        with open(temp_file_path, mode="rb") as temp_file:
-            temp_results = np.load(temp_file)
-        results_array[i] += temp_results
-    return results_array
 
 
 def get_dims_and_dtype_of_npy_file(file_path: str):
