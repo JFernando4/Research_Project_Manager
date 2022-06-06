@@ -2,11 +2,12 @@ import os
 import time
 import argparse
 import sys
-import json
-
+from importlib.machinery import SourceFileLoader
+# from project files:
 from src.file_management import read_json_file, get_param_values, get_experiment_dir, get_missing_indices, \
     write_slurm_file, override_slurm_config
 from src.definitions import ROOT, EXPERIMENT_RUNNER
+from src.experiments import load_experiment_registry
 sys.path.append(ROOT)
 
 
@@ -44,7 +45,7 @@ def retrieve_indices(experiments_dicts: list, exp_config_dict: dict):
     for exp_dict in experiments_dicts:
         exp_dir = get_experiment_dir(exp_dict, exp_dict["relevant_parameters"], exp_dict["results_path"],
                                      exp_dict["experiment_name"])
-        missing_indices = get_missing_indices(exp_dir, exp_config_dict["runs"])
+        missing_indices = get_missing_indices(exp_dir, exp_config_dict["experiment_params"]["runs"])
         if missing_indices.size > 0:
             valid_experiment_dicts.append({"dict": exp_dict, "dir": exp_dir, "indices": missing_indices})
     return valid_experiment_dicts
@@ -112,14 +113,19 @@ def run_serial_jobs(experiment: dict, missing_indices: list, exp_name: str):
     :param missing_indices: (list) indices of the remaining experiments to be ran
     :param exp_name: (str) name of the experiment
     """
+    exp_registry = load_experiment_registry()
+    if exp_name not in exp_registry:
+        raise KeyError("Make sure to register the experiment first!")
+    exp_path, exp_class_name = exp_registry[exp_name]
+    experiment_module = SourceFileLoader(exp_class_name, exp_path).load_module()
+    exp_class = getattr(experiment_module, exp_class_name)
+
     for idx in missing_indices:
         print("Running index: {0}".format(idx))
-        temp_dict = {**experiment["dict"], "index": int(idx), "plot_results": False, "verbose": False, "debug": False}
-        json_string = json.dumps(temp_dict).replace('"', '\\"')
-        os.system(
-            'python {0} --json-string "{1}" --exp-dir {2} --exp-name {3}'.format(
-                EXPERIMENT_RUNNER, json_string, experiment["dir"], exp_name)
-        )
+        temp_dict = {**experiment["dict"], "index": int(idx), "plot_results": False, "debug": False}
+        exp = exp_class(temp_dict, experiment["dir"], run_index=idx, verbose=False)
+        exp.run()
+        exp.store_results()
 
 
 def main():
