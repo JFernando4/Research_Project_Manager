@@ -45,3 +45,32 @@ def get_activation(name):
         return lambda x: x
     else:
         raise ValueError("{0} is not a valid activation!")
+
+
+def get_distribution_function(name: str, parameter_values: tuple, use_torch=False):
+    """
+    Returns a distribution function according to the specified parameters
+    :param name: (str) name of the distribution
+    :param parameter_values: (tuple) parameter values used for generating a distribution
+    :param use_torch: (bool) whether to generate a distribution using torch
+    :return: lambda function that takes an input integer and returns an array with that many random numbers
+             generated using the specified distribution
+    """
+    if name == "normal":
+        """ parameter value format: (mean, standard deviation) """
+        mean = parameter_values[0]
+        std = parameter_values[1]
+        if use_torch:
+            return lambda z: torch.normal(mean=(mean, ) * z, std=(std, ) * z)
+        else:
+            return lambda z: np.random.normal(mean, std, z)
+    elif name == "uniform":
+        """ parameter value format: (lower bound, upper bound) """
+        lower_bound = parameter_values[0]
+        upper_bound = parameter_values[1]
+        if use_torch:
+            return lambda z: torch.rand(z) * (upper_bound - lower_bound) + lower_bound
+        else:
+            return lambda z: np.random.uniform(lower_bound, upper_bound, z)
+    else:
+        raise ValueError("{0} is not a valid distribution!".format(name))
