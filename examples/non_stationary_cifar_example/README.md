@@ -13,7 +13,7 @@ in `src/experiments/abstract_experiment.py`. The json config file must follow th
         },
             },
 
-        "experiment_parameters": {
+        "experiment_params": {
             "epochs": 800,
             "batch_size": 1,
             "checkpoint": 1,
@@ -36,7 +36,7 @@ in `src/experiments/abstract_experiment.py`. The json config file must follow th
 
 The `"file_management"` level specifies details necessary for reading and writing operations. The results of an experiment are stored in a new directory in the path: `"results_path/experiment_name/param1-sgd_param2-0.005_param3-0.1"`. For more information about how parameters with variable value such as `"param2"` and `"param3"` are handled in the example above, check the function `create_parameter_value` located in `src/file_management/experiment_management`. 
 
-The `"expemeriment_parameters"` level gives details about experiment variables that remain constant and are not considered part of the learning algorithm, such as number of epochs, how often to store the results, number of steps in a reinforcement learning experiments, or the batch size used to perform updates. There is no strong definition of what is considered an experiment parameter, so what may be considered an experiment parameter in one experiment may instead be considered a learning parameter on another experiment. In other words, the distinction between learning and experiment parameters is artificial, and it's just used to emphasize variables of interests (learning parameters) from variables that remain constant in an experiment (experiment parameters).
+The `"experiment_params"` level gives details about experiment variables that remain constant and are not considered part of the learning algorithm, such as number of epochs, how often to store the results, number of steps in a reinforcement learning experiments, or the batch size used to perform updates. There is no strong definition of what is considered an experiment parameter, so what may be considered an experiment parameter in one experiment may instead be considered a learning parameter on another experiment. In other words, the distinction between learning and experiment parameters is artificial, and it's just used to emphasize variables of interests (learning parameters) from variables that remain constant in an experiment (experiment parameters).
 
 The `"learning_parameters"` level specifies parameters that define and influence the performance of a learning algorithm in an experiment, such as the stepsize, the dropout probability, and the weight decay factor, to name a few. 
 
