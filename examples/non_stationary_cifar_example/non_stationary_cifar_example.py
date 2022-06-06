@@ -65,7 +65,7 @@ class NonStationaryCifarExperiment(Experiment):
         self.optimizer = exp_params["optimizer"]
         self.stepsize = exp_params["stepsize"]
         self.plot_results = exp_params["plot_results"]
-        self.epochs = exp_params["epochs"]
+        self.epochs_per_task = exp_params["epochs_per_task"]
         self.checkpoint = exp_params["checkpoint"]
         self.data_path = exp_params['data_path']
         self.batch_size = exp_params['batch_size']
@@ -115,7 +115,7 @@ class NonStationaryCifarExperiment(Experiment):
         self.current_obs = 0
         # train summaries
         num_partitions = 100 // self.num_classes
-        num_cps = (self.num_images_per_epoch // (self.checkpoint * self.batch_size)) * self.epochs * num_partitions
+        num_cps = (self.num_images_per_epoch // (self.checkpoint * self.batch_size)) * self.epochs_per_task * num_partitions
         self.results_dict["avg_accuracy_per_cp"] = torch.zeros(num_cps, device=self.device, dtype=torch.float32)
         self.results_dict["avg_loss_per_cp"] = torch.zeros(num_cps, device=self.device, dtype=torch.float32)
         self.results_dict["test_accuracy_per_cp"] = torch.zeros(num_cps, device=self.device, dtype=torch.float32)
@@ -228,7 +228,7 @@ class NonStationaryCifarExperiment(Experiment):
             temp_test_data = next(iter(test_data_loader))
 
             # train network
-            for epoch in range(self.epochs):
+            for epoch in range(self.epochs_per_task):
                 self.current_epoch += 1
                 self._print("Epoch number: {0}".format(self.current_epoch))
 
