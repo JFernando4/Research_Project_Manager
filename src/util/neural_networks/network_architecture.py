@@ -9,6 +9,7 @@ from collections import namedtuple
 
 
 layer = namedtuple("Layer", ("type", "parameters", "gate"))
+distribution = namedtuple("Distribution", ("function", "parameter_names", "parameter_values"))
 
 
 def get_conv_layer_output_dims(h_in, w_in, kernel_size, stride, padding=(0, 0), dilatation=(1, 1)):
