@@ -74,7 +74,7 @@ def save_index(results_dir: str, run_index: int):
     print("Index successfully saved!")
 
 
-def write_slurm_file(slurm_config: dict, exps_config: list, exp_wrapper: str, exp_dir: str, exp_name: str, job_index=0):
+def write_slurm_file(slurm_config: dict, exps_config: list, exp_wrapper: str, exp_dir: str, exp_name: str, job_number=0):
     """
     Creates a temporary slurm file for an experiment
     :param slurm_config: slurm parameters for running the experiment
@@ -82,17 +82,17 @@ def write_slurm_file(slurm_config: dict, exps_config: list, exp_wrapper: str, ex
     :param exp_wrapper: path to a file that can run the experiment by passing a json file string to it
     :param exp_dir: directory to save all the data about the experiment
     :param exp_name: name of the experiment
-    :param job_index: run number
+    :param job_number: run number
     :return: path to the file
     """
 
-    job_path = os.path.join(exp_dir, "job_{0}.sh".format(job_index))
+    job_path = os.path.join(exp_dir, "job_{0}.sh".format(job_number))
 
     with open(job_path, mode="w") as job_file:
         job_file.writelines("#!/bin/bash\n")
-        job_file.writelines("#SBATCH --job-name={0}_{1}\n".format(slurm_config["job_name"], job_index))
+        job_file.writelines("#SBATCH --job-name={0}_{1}\n".format(slurm_config["job_name"], job_number))
         output_path = os.path.join(slurm_config["output_dir"], slurm_config["output_filename"])
-        job_file.writelines("#SBATCH --output={0}_{1}.out\n".format(output_path, job_index))
+        job_file.writelines("#SBATCH --output={0}_{1}.out\n".format(output_path, job_number))
         job_file.writelines("#SBATCH --time={0}\n".format(slurm_config["time"]))
         job_file.writelines("#SBATCH --mem={0}\n".format(slurm_config["mem"]))
         job_file.writelines("#SBATCH --mail-type={0}\n".format(slurm_config["mail-type"]))
