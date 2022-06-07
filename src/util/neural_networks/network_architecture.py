@@ -61,8 +61,8 @@ def get_distribution_function(name: str, parameter_values: tuple, use_torch=Fals
         mean = parameter_values[0]
         std = parameter_values[1]
         if use_torch:
-            return lambda z: torch.normal(mean=torch.tensor((mean, ) * z).double(),
-                                          std=torch.tensor((std, ) * z).double())
+            return lambda z: torch.normal(mean=torch.tensor((mean, ) * z).to(dtype=torch.float32),
+                                          std=torch.tensor((std, ) * z).to(dtype=torch.float32))
         else:
             return lambda z: np.random.normal(mean, std, z)
     elif name == "uniform":
@@ -70,7 +70,7 @@ def get_distribution_function(name: str, parameter_values: tuple, use_torch=Fals
         lower_bound = parameter_values[0]
         upper_bound = parameter_values[1]
         if use_torch:
-            return lambda z: torch.rand(z) * (upper_bound - lower_bound) + lower_bound
+            return lambda z: torch.rand(z, dtype=torch.float32) * (upper_bound - lower_bound) + lower_bound
         else:
             return lambda z: np.random.uniform(lower_bound, upper_bound, z)
     else:
