@@ -1,16 +1,13 @@
 import torch
-from torch.utils.data import DataLoader
-from torchvision import transforms
 import numpy as np
 import os
 # from project files
-from src.definitions import ROOT, CIFAR_DATA_PATH
+from src.definitions import ROOT
 from src.experiments import Experiment
 from src.function_approximators import DeepNet
-from src.util import turn_off_debugging_processes, get_random_seeds, access_dict, distribution
-from src.util.neural_networks import layer, add_noise_to_weights, init_weights_kaiming, get_optimizer
+from src.util import get_random_seeds, access_dict, distribution
+from src.util.neural_networks import layer, get_initialization_function, get_optimizer
 from src.problems import FeedForwardTargetGeneratingNetwork
-from src.util.data_preprocessing_and_transformations import ToTensor, RandomGaussianNoise, RandomErasing
 from src.file_management.file_and_directory_management import save_experiment_config_file
 os.chdir(ROOT)
 
@@ -72,6 +69,7 @@ class TargetGeneratingNetworkExperiment(Experiment):
         self.learning_network_size = exp_params["ln-size"]
         self.learning_network_depth = exp_params["ln-depth"]
         self.learning_network_activation = exp_params["ln-activation"]
+        self.learning_network_dist = exp_params["ln-dist"]
         self.optimizer = exp_params["optimizer"]
         self.stepsize = exp_params["stepsize"]
         self.weight_decay = access_dict(exp_params, key="weight-decay", default=0.0, val_type=float)
@@ -170,9 +168,12 @@ class TargetGeneratingNetworkExperiment(Experiment):
         )
 
         # initialize learning network
-        self.net.apply(lambda x: init_weights_kaiming(x, normal=False, nonlinearity="relu"))
+        init_dist = distribution(name=self.learning_network_dist[0], parameter_values=self.learning_network_dist[1:])
+        init_function = get_initialization_function(init_dist)
+        self.net.apply(init_function)
         # the last layer activation is linear
-        torch.nn.init.kaiming_uniform_(list(self.net.modules())[-1].weight, nonlinearity="linear")
+        if self.learning_network_dist[0] == "kaiming":
+            torch.nn.init.kaiming_uniform_(list(self.net.modules())[-1].weight, nonlinearity="linear")
 
         # dropout simply doesn't work with jit.trace, or at least I couldn't get it to work properly
         if self.drop_prob == 0.0:
@@ -222,18 +223,19 @@ def main():
 
     exp_params = {
         "num-samples": 20000,
-        "tgn-size": 256,
+        "tgn-size": 64,
         "tgn-depth": 3,
         "tgn-activation": "relu",
         "tgn-input-dist": ("normal", 0, 0.2),
-        "tgn-weight-dist": ("normal", 0, 0.5),
+        "tgn-weight-dist": ("normal", 0, 0.2),
         "num_outputs": 5,
         "num_inputs": 10,
-        "ln-size":  256,
+        "ln-size":  64,
         "ln-depth": 3,
+        "ln-dist": ("normal", 0, 0.2),
         "ln-activation": "relu",
         "optimizer": "sgd",
-        "stepsize": 0.01,
+        "stepsize": 0.1,
         "checkpoint": 100,
         "plot_results": True
     }
