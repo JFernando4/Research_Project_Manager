@@ -22,7 +22,8 @@ def xavier_init_weights(m, normal=True):
             nn.init.xavier_normal_(m.weight)
         else:
             nn.init.xavier_uniform_(m.weight)
-        m.bias.data.fill_(0.0)
+        if m.bias is not None:
+            m.bias.data.fill_(0.0)
 
 
 def init_weights_kaiming(m, nonlinearity='relu', normal=True):
@@ -38,7 +39,8 @@ def init_weights_kaiming(m, nonlinearity='relu', normal=True):
             nn.init.kaiming_normal_(m.weight, nonlinearity=nonlinearity)
         else:
             nn.init.kaiming_uniform_(m.weight, nonlinearity=nonlinearity)
-        m.bias.data.fill_(0.0)
+        if m.bias is not None:
+            m.bias.data.fill_(0.0)
 
 
 def init_weights_normal(m, parameter_values: tuple):
@@ -50,7 +52,8 @@ def init_weights_normal(m, parameter_values: tuple):
     """
     if isinstance(m, nn.Linear) or isinstance(m, nn.Conv2d):
         nn.init.normal_(m.weight, mean=parameter_values[0], std=parameter_values[1])
-        m.bias.data.fill_(0.0)
+        if m.bias is not None:
+            m.bias.data.fill_(0.0)
 
 
 def init_weights_uniform(m, parameter_values: tuple):
@@ -63,7 +66,8 @@ def init_weights_uniform(m, parameter_values: tuple):
     if isinstance(m, nn.Linear) or isinstance(m, nn.Conv2d):
         lower_bound, upper_bound = parameter_values
         nn.init.uniform_(m.weight, a=lower_bound, b=upper_bound)
-        m.bias.data.fill_(0.0)
+        if m.bias is not None:
+            m.bias.data.fill_(0.0)
 
 
 def get_initialization_function(dist: distribution):
