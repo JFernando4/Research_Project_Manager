@@ -10,7 +10,7 @@ from src.util.neural_networks.network_architecture import layer, get_activation,
 class DeepNet(nn.Module):
     """ Builds a conv net with a specified number of layers and dimensions """
 
-    def __init__(self, architecture, image_dims):
+    def __init__(self, architecture, image_dims, use_bias=True):
         """
         :param architecture: a list of named tuples where each tuple represents a layer. Each named tuple must contain
                              the following names:
@@ -24,6 +24,7 @@ class DeepNet(nn.Module):
             - gate: a string specifying the gate function for the layer. Available options:
                       { "relu", "sigmoid", "tanh", None } (None corresponds to the identity function f(x) = x)
         :param image_dims:  the width and height of the input images (int, ) x 2
+        :param use_bias: (bool) whether to use a bias term in  each layer
         """
         super(DeepNet, self).__init__()
 
@@ -36,6 +37,7 @@ class DeepNet(nn.Module):
             self.activations.append(get_activation(a_layer.gate))
 
         self.image_dims = image_dims
+        self.use_bias = use_bias
 
         # create list of modules
         self.network_module_list = nn.ModuleList()
@@ -47,7 +49,8 @@ class DeepNet(nn.Module):
         for a_layer in self.architecture:
             if a_layer.type == "conv2d":
                 in_channels, out_channels, kernel_size, stride = a_layer.parameters
-                self.network_module_list.append(nn.Conv2d(in_channels, out_channels, kernel_size, stride, bias=True))
+                self.network_module_list.append(nn.Conv2d(in_channels, out_channels, kernel_size, stride,
+                                                          bias=self.use_bias))
                 h_out, w_out = get_conv_layer_output_dims(h_out, w_out, kernel_size, stride)
             elif a_layer.type == "maxpool":
                 kernel_size, stride = a_layer.parameters
@@ -56,7 +59,7 @@ class DeepNet(nn.Module):
             elif a_layer.type == "linear":
                 _, out_features = a_layer.parameters
                 in_features = h_out * w_out * out_channels
-                self.network_module_list.append(nn.Linear(in_features, out_features, bias=True))
+                self.network_module_list.append(nn.Linear(in_features, out_features, bias=self.use_bias))
                 h_out, w_out, out_channels = (out_features, 1, 1)
             elif a_layer.type == "flatten":
                 assert len(a_layer.parameters) == 0
