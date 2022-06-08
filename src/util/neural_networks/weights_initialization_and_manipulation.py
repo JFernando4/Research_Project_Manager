@@ -67,7 +67,27 @@ def init_weights_uniform(m, parameter_values: tuple):
 
 
 def get_initialization_function(dist: distribution):
-    pass
+    """
+    returns one of the many initialization functions according to the given distribution
+    :param dist: (named tuple) specifies the name and parameter_values of the distribution. The options are:
+                            ## name ##              ## parameter_values ##
+                            "xavier"                (bool, None) — specifies whether to use a normal distribution
+                            "kaiming"               (bool, str) — (whether to use normal distribution,
+                                                                   name of the activation function)
+                            "normal"                (float, float) — mean and standard deviation
+                            "uniform"               (float, float) — upper and lower bounds
+    :return: lambda function corresponding to the initialization method
+    """
+    if dist.name == "xavier":
+        return lambda z: xavier_init_weights(z, normal=dist.parameter_values[0])
+    elif dist.name == "kaiming":
+        return lambda z: init_weights_kaiming(z, normal=dist.parameter_values[0], nonlinearity=dist.parameter_values[1])
+    elif dist.name == "normal":
+        return lambda z: init_weights_normal(z, parameter_values=dist.parameter_values)
+    elif dist.name == "uniform":
+        return lambda z: init_weights_uniform(z, parameter_values=dist.parameter_values)
+    else:
+        raise ValueError("{0} is not a valid distribution!".format(dist.name))
 
 
 def scale_weights(m, scale=0.9):
