@@ -54,7 +54,7 @@ def register_experiment(experiment_name: str, experiment_path: str, experiment_c
 def main():
     arguments = argparse.ArgumentParser()
     arguments.add_argument("--experiment-name", action="store", type=str, required=True)
-    arguments.add_argument("--experiment-class_name", action="store", type=str, required=False)
+    arguments.add_argument("--experiment-class-name", action="store", type=str, required=False)
     arguments.add_argument("--experiment-path", action="store", type=str, required=True)
     parsed_args = arguments.parse_args()
 
