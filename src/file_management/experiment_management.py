@@ -46,6 +46,8 @@ def get_param_values(values):
         # if list of strings, return list
         if values[0] == "str":
             return values[1:]
+        if values[0] == "tuple":
+            return values[1:]
 
         # if list of numbers, handle according to the label in the zero entry
         elif isinstance(values[1], int) or isinstance(values[1], float):
