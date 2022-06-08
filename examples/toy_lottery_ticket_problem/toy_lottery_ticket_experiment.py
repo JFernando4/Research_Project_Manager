@@ -199,6 +199,10 @@ class TargetGeneratingNetworkExperiment(Experiment):
 
             # compute loss
             current_loss = self.loss_fn(outputs, target.T)
+
+            has_diverged = self.handle_divergence(current_loss)
+            if has_diverged: break
+
             if self.l1_reg:
                 current_loss += self.lasso_coeff * sum(torch.abs(p).sum() for p in self.net.parameters())
 
@@ -208,6 +212,18 @@ class TargetGeneratingNetworkExperiment(Experiment):
 
             # store current summaries and display
             self.store_train_summaries(current_loss.detach())
+
+    def handle_divergence(self, loss):
+        """
+        Checks if the current loss has diverged and sets results accordingly
+        :param loss: (torch tensor) loss function of the current prediction and target
+        :return: True if the loss function is nan or infinity
+        """
+        if torch.any(torch.isnan(loss)) or torch.any(torch.isinf(loss)):
+            curr_cp = (self.current_sample // self.checkpoint) - 1
+            self.results_dict["avg_mse_per_cp"][curr_cp:] = torch.inf
+            return True
+        return False
 
 
 def main():
@@ -219,15 +235,15 @@ def main():
         "tgn-depth": 3,
         "tgn-activation": "relu",
         "tgn-input-dist": ("normal", 0.05, 0.01),
-        "tgn-weight-dist": ("normal", 0.05, 0.02),
+        "tgn-weight-dist": ("normal", 1.0, 0.2),
         "num_outputs": 5,
         "num_inputs": 10,
-        "ln-size":  16,
+        "ln-size": 256,
         "ln-depth": 3,
         "ln-dist": ("normal", 0.05, 0.02),
         "ln-activation": "relu",
         "optimizer": "sgd",
-        "stepsize": 0.001,
+        "stepsize": 0.1,
         "checkpoint": 100,
         "plot_results": True
     }
