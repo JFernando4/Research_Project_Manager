@@ -33,7 +33,7 @@ def init_weights_kaiming(m, nonlinearity='relu', normal=True):
     :param normal: (bool) whether to use normal initialization, uses uniform is false
     :return: None, operation is done in-place
     """
-    if m is isinstance(m, nn.Linear) or isinstance(m, nn.Conv2d):
+    if isinstance(m, nn.Linear) or isinstance(m, nn.Conv2d):
         if normal:
             nn.init.kaiming_normal_(m.weight, nonlinearity=nonlinearity)
         else:
@@ -48,7 +48,7 @@ def init_weights_normal(m, parameter_values: tuple):
     :param parameter_values: (tuple) containing the mean and standard deviation of the normal distribution
     :return: None, operation is done in-place
     """
-    if m is isinstance(m, nn.Linear) or isinstance(m, nn.Conv2d):
+    if isinstance(m, nn.Linear) or isinstance(m, nn.Conv2d):
         nn.init.normal_(m.weight, mean=parameter_values[0], std=parameter_values[1])
         m.bias.data.fill_(0.0)
 
@@ -60,7 +60,7 @@ def init_weights_uniform(m, parameter_values: tuple):
     :param parameter_values: (tuple) containing the lower and upper bound of the uniform distributinon
     :return: None, operation is done in-place
     """
-    if m is isinstance(m, nn.Linear) or isinstance(m, nn.Conv2d):
+    if isinstance(m, nn.Linear) or isinstance(m, nn.Conv2d):
         lower_bound, upper_bound = parameter_values
         nn.init.uniform_(m.weight, a=lower_bound, b=upper_bound)
         m.bias.data.fill_(0.0)
