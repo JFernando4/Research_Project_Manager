@@ -19,7 +19,12 @@ def get_experiment_dir(exp_dictionary: dict, relevant_variables: list, result_pa
 
     exp_name = []
     for relevant_var in relevant_variables:
-        exp_name.append(relevant_var + "-" + str(exp_dictionary[relevant_var]))
+        temp_str = relevant_var + "-"
+        if isinstance(exp_dictionary[relevant_var], tuple) or isinstance(exp_dictionary[relevant_var], list):
+            temp_str += "-".join(str(i) for i in exp_dictionary[relevant_var])
+        else:
+            temp_str += str(exp_dictionary[relevant_var])
+        exp_name.append(temp_str)
 
     exp_path = os.path.join(result_path, experiment_class_name, "_".join(exp_name))
     return exp_path
