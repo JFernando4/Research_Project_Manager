@@ -131,10 +131,10 @@ def run_serial_jobs(experiment: dict, missing_indices: list, exp_name: str):
 def main():
 
     arguments = argparse.ArgumentParser()
-    arguments.add_argument("--experiment_name", action="store", type=str, default="baseline")
-    arguments.add_argument("--experiment_config_path", action="store", type=str, required=True)
-    arguments.add_argument("--slurm_config_path", action="store", type=str, required=False)
-    arguments.add_argument("--use_slurm", action="store_true", default=False)
+    arguments.add_argument("--experiment-name", action="store", type=str, default="baseline")
+    arguments.add_argument("--experiment-config-path", action="store", type=str, required=True)
+    arguments.add_argument("--slurm-config-path", action="store", type=str, required=False)
+    arguments.add_argument("--use-slurm", action="store_true", default=False)
     parsed_args = arguments.parse_args()
 
     experiment_name = parsed_args.experiment_name
