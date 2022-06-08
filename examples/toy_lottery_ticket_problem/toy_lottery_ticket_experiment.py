@@ -127,10 +127,10 @@ class TargetGeneratingNetworkExperiment(Experiment):
         """
         i_dist = tuple(self.target_generating_network_input_dist)
         w_dist = tuple(self.target_generating_network_weight_dist)
-        new_result_dir = "tgn-size-" + str(self.target_generating_network_size) + "_" +\
-                         "tgn-depth-" + str(self.target_generating_network_depth) + "_" +\
-                         "tgn-activation-" + self.target_generating_network_activation + "_" +\
-                         "tgn-input-dist-" + i_dist[0] + "-" + str(i_dist[1][0]) + "-" + str(i_dist[1][1]) + "_" +\
+        new_result_dir = "tgn-size-" + str(self.target_generating_network_size) + "_" + \
+                         "tgn-depth-" + str(self.target_generating_network_depth) + "_" + \
+                         "tgn-activation-" + self.target_generating_network_activation + "_" + \
+                         "tgn-input-dist-" + i_dist[0] + "-" + str(i_dist[1][0]) + "-" + str(i_dist[1][1]) + "_" + \
                          "tng-weight_dist-" + w_dist[0] + "-" + str(w_dist[1][0]) + "-" + str(w_dist[1][1]) + "_" + \
                          "num-inputs-" + str(self.num_inputs) + "_num-outputs-" + str(self.num_outputs)
         new_dir_path = os.path.join(self.results_dir, new_result_dir)
