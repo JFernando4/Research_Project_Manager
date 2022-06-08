@@ -79,7 +79,7 @@ class TargetGeneratingNetworkExperiment(Experiment):
         self.plot_results = exp_params["plot_results"]
         self.checkpoint = exp_params["checkpoint"]
         self.basic_summaries = access_dict(exp_params, key="basic_summaries", default=False, val_type=bool)
-        save_experiment_config_file(results_dir, exp_params, run_index)
+        save_experiment_config_file(self.results_dir, exp_params, run_index)
 
         """ Define indicator variables and static functions """
         self.l1_reg = (self.lasso_coeff > 0.0)
@@ -90,8 +90,7 @@ class TargetGeneratingNetworkExperiment(Experiment):
                                                                        drop_prob=self.drop_prob,
                                                                        num_outputs=self.num_outputs,
                                                                        gate_function=self.learning_network_activation)
-        self.net = DeepNet(self.learning_architecture, (1,self.num_inputs))
-        self.scripted_forward_pass = None
+        self.net = DeepNet(self.learning_architecture, (1,self.num_inputs), use_bias=False)
         self.loss_fn = torch.nn.MSELoss(reduction="mean")
 
         """ For summaries """
@@ -175,13 +174,6 @@ class TargetGeneratingNetworkExperiment(Experiment):
         if self.learning_network_dist[0] == "kaiming":
             torch.nn.init.kaiming_uniform_(list(self.net.modules())[-1].weight, nonlinearity="linear")
 
-        # dropout simply doesn't work with jit.trace, or at least I couldn't get it to work properly
-        if self.drop_prob == 0.0:
-            dummy_sample = torch.zeros((1, self.num_inputs))
-            self.scripted_forward_pass = torch.jit.trace(self.net, dummy_sample)
-        else:
-            self.scripted_forward_pass = self.net
-
         optimizer = get_optimizer(self.optimizer, self.net.parameters(), stepsize=self.stepsize,
                                   weight_decay=self.weight_decay)
 
@@ -203,7 +195,7 @@ class TargetGeneratingNetworkExperiment(Experiment):
             for param in self.net.parameters(): param.grad = None
 
             # forward pass
-            outputs, activations = self.scripted_forward_pass(net_input.T)
+            outputs, activations = self.net(net_input.T)
 
             # compute loss
             current_loss = self.loss_fn(outputs, target.T)
@@ -222,30 +214,30 @@ def main():
     import time
 
     exp_params = {
-        "num-samples": 20000,
+        "num-samples": 100000,
         "tgn-size": 64,
         "tgn-depth": 3,
         "tgn-activation": "relu",
-        "tgn-input-dist": ("normal", 0, 0.2),
-        "tgn-weight-dist": ("normal", 0, 0.2),
+        "tgn-input-dist": ("normal", 0.05, 0.01),
+        "tgn-weight-dist": ("normal", 0.05, 0.02),
         "num_outputs": 5,
         "num_inputs": 10,
-        "ln-size":  64,
+        "ln-size":  16,
         "ln-depth": 3,
-        "ln-dist": ("normal", 0, 0.2),
+        "ln-dist": ("normal", 0.05, 0.02),
         "ln-activation": "relu",
         "optimizer": "sgd",
-        "stepsize": 0.1,
+        "stepsize": 0.001,
         "checkpoint": 100,
         "plot_results": True
     }
-
     initial_time = time.perf_counter()
     results_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "lottery_ticket_results")
     exp = TargetGeneratingNetworkExperiment(exp_params, results_dir, 1, True)
     exp.run()
     final_time = time.perf_counter()
     print("The running time in minutes is: {0:.2f}".format((final_time - initial_time) / 60))
+    print("Stepsize: {0}".format(exp_params["stepsize"]))
 
 
 if __name__ == '__main__':
