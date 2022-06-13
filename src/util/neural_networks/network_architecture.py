@@ -4,7 +4,7 @@ Functions related to building the network architecture and optimizing the networ
 import numpy as np
 import torch
 from torch import optim
-from torch.nn.functional import relu, tanh, sigmoid
+from torch import relu, sigmoid, tanh
 from collections import namedtuple
 
 
@@ -35,11 +35,11 @@ def get_optimizer(optimizer: str, nn_parameters, **kwargs):
 
 def get_activation(name):
     if name == "relu":
-        return torch.jit.script(relu)
+        return relu
     elif name == "tanh":
-        return torch.jit.script(tanh)
+        return tanh
     elif name == "sigmoid":
-        return torch.jit.script(sigmoid)
+        return sigmoid
     elif name is None:
         return lambda x: x
     else:
