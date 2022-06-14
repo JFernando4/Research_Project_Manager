@@ -3,6 +3,8 @@ import numpy as np
 import matplotlib as mpl
 import matplotlib.colors as mc
 import colorsys
+# from project files:
+from src.plots_and_summaries.summaries import compute_average_and_standard_error
 
 
 def lighten_color(color, amount=0.5):
