@@ -10,7 +10,7 @@
     "epochs_per_task": 200,
     "batch_size": 4,
     "checkpoint": 5,
-    "runs": 3
+    "runs": 10
   },
 
   "learning_params": {
