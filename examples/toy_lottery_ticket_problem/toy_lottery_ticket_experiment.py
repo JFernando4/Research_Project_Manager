@@ -45,7 +45,6 @@ class TargetGeneratingNetworkExperiment(Experiment):
     """
 
     def __init__(self, exp_params: dict, results_dir: str, run_index: int, verbose=True):
-        super().__init__(exp_params, results_dir, run_index, verbose)
 
         """ For reproducibility """
         random_seeds = get_random_seeds()
@@ -61,6 +60,7 @@ class TargetGeneratingNetworkExperiment(Experiment):
         self.target_generating_network_weight_dist = distribution(name=w_dist[0], parameter_values=w_dist[1:])
         self.num_outputs = exp_params["num_outputs"]
         self.num_inputs = exp_params["num_inputs"]
+        self.results_dir = results_dir
         self.update_results_dir()
         # for defining the learning algorithm
         self.learning_network_size = exp_params["ln-size"]
@@ -76,7 +76,7 @@ class TargetGeneratingNetworkExperiment(Experiment):
         self.plot_results = exp_params["plot_results"]
         self.checkpoint = exp_params["checkpoint"]
         self.basic_summaries = access_dict(exp_params, key="basic_summaries", default=False, val_type=bool)
-        save_experiment_config_file(self.results_dir, exp_params, run_index)
+        super().__init__(exp_params, self.results_dir, run_index, verbose)
 
         """ Define indicator variables and static functions """
         self.l1_reg = (self.lasso_coeff > 0.0)
