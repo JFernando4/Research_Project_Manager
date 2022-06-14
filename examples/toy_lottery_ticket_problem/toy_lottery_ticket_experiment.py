@@ -29,14 +29,11 @@ def get_learning_network_architecture(network_size: str, depth: int, drop_prob=0
     for i in range(depth):
         temp_layer = layer(type="linear", parameters=(None, network_size), gate=gate_function)
         architecture.append(temp_layer)
+        if drop_prob > 0.0:
+            architecture.append(layer(type="dropout", parameters=drop_prob, gate=None))
 
     output_layer = layer(type="linear", parameters=(None, num_outputs), gate=None)
     architecture.append(output_layer)
-
-    if drop_prob > 0.0:
-        for i in range(depth):
-            temp_idx = 2 * i + 1
-            architecture.insert(temp_idx, layer(type="dropout", parameters=drop_prob, gate=None))
 
     return architecture
 
@@ -232,18 +229,18 @@ def main():
     exp_params = {
         "num-samples": 100000,
         "tgn-size": 64,
-        "tgn-depth": 3,
-        "tgn-activation": "relu",
+        "tgn-depth": 1,
+        "tgn-activation": "sigmoid",
         "tgn-input-dist": ("normal", 0.05, 0.01),
         "tgn-weight-dist": ("normal", 1.0, 0.2),
-        "num_outputs": 5,
+        "num_outputs": 1,
         "num_inputs": 10,
-        "ln-size": 256,
-        "ln-depth": 3,
+        "ln-size": 128,
+        "ln-depth": 1,
         "ln-dist": ("normal", 0.05, 0.02),
-        "ln-activation": "relu",
+        "ln-activation": "sigmoid",
         "optimizer": "sgd",
-        "stepsize": 0.1,
+        "stepsize": 0.05,
         "checkpoint": 100,
         "plot_results": True
     }
