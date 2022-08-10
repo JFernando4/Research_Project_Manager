@@ -2,13 +2,13 @@ import torch
 import numpy as np
 import os
 # from project files
-from src.definitions import ROOT
-from src.experiments import Experiment
-from src.function_approximators import DeepNet
-from src.util import get_random_seeds, access_dict, distribution
-from src.util.neural_networks import layer, get_initialization_function, get_optimizer
-from src.problems import FeedForwardTargetGeneratingNetwork
-from src.file_management.file_and_directory_management import save_experiment_config_file
+from mlproj_manager.definitions import ROOT
+from mlproj_manager.experiments import Experiment
+from mlproj_manager.function_approximators import DeepNet
+from mlproj_manager.util import get_random_seeds, access_dict, distribution
+from mlproj_manager.util.neural_networks import layer, get_initialization_function, get_optimizer
+from mlproj_manager.problems import FeedForwardTargetGeneratingNetwork
+from mlproj_manager.file_management.file_and_directory_management import save_experiment_config_file
 os.chdir(ROOT)
 
 

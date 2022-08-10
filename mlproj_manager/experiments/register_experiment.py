@@ -6,8 +6,8 @@ import argparse
 import os
 from importlib.machinery import SourceFileLoader
 # from project files
-from src.definitions import ROOT
-from src.experiments.abstract_experiment import Experiment
+from mlproj_manager.definitions import ROOT
+from mlproj_manager.experiments.abstract_experiment import Experiment
 
 
 def load_experiment_registry():

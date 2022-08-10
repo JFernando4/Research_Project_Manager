@@ -1,5 +1,5 @@
 # from project files:
-from src.file_management.file_and_directory_management import save_experiment_config_file, save_experiment_results
+from mlproj_manager.file_management.file_and_directory_management import save_experiment_config_file, save_experiment_results
 
 
 class Experiment:

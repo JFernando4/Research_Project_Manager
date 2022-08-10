@@ -7,9 +7,9 @@ import numpy as np
 import torch
 import torchvision
 # from project files:
-from src.problems.supervised_learning.abstract_dataset import CustomDataSet
-from src.util.data_preprocessing_and_transformations import normalize, preprocess_labels
-from src.definitions import MNIST_DATA_PATH
+from mlproj_manager.problems.supervised_learning.abstract_dataset import CustomDataSet
+from mlproj_manager.util.data_preprocessing_and_transformations import normalize, preprocess_labels
+from mlproj_manager.definitions import MNIST_DATA_PATH
 
 
 class MnistDataSet(CustomDataSet):

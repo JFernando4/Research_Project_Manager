@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 # from project files:
-from src.util.neural_networks.network_architecture import layer, get_activation, get_conv_layer_output_dims
+from mlproj_manager.util.neural_networks.network_architecture import layer, get_activation, get_conv_layer_output_dims
 
 
 class DeepNet(nn.Module):
@@ -95,14 +95,14 @@ class DeepNet(nn.Module):
 def main():
     """ Test: training the network """
     # import extra modules
-    from src.problems.supervised_learning import CifarDataSet
-    from src.util.data_preprocessing_and_transformations import ToTensor, RandomGaussianNoise, RandomErasing
-    from src.definitions import ROOT
+    from mlproj_manager.problems.supervised_learning import CifarDataSet
+    from mlproj_manager.util.data_preprocessing_and_transformations import ToTensor, RandomGaussianNoise, RandomErasing
+    from mlproj_manager.definitions import ROOT
     import os
     import torch.optim as optim
     import matplotlib.pyplot as plt
     from torchvision import transforms
-    from src.util.neural_networks.weights_initialization_and_manipulation import xavier_init_weights
+    from mlproj_manager.util.neural_networks.weights_initialization_and_manipulation import xavier_init_weights
 
     # training parameters
     batch_size = 4

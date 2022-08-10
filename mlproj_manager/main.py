@@ -4,10 +4,10 @@ import argparse
 import sys
 from importlib.machinery import SourceFileLoader
 # from project files:
-from src.file_management import read_json_file, get_param_values, get_experiment_dir, get_missing_indices, \
+from mlproj_manager.file_management import read_json_file, get_param_values, get_experiment_dir, get_missing_indices, \
     write_slurm_file, override_slurm_config
-from src.definitions import ROOT, EXPERIMENT_RUNNER
-from src.experiments import load_experiment_registry
+from mlproj_manager.definitions import ROOT, EXPERIMENT_RUNNER
+from mlproj_manager.experiments import load_experiment_registry
 sys.path.append(ROOT)
 
 

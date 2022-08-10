@@ -4,14 +4,14 @@ from torchvision import transforms
 import numpy as np
 import os
 # from project files
-from src.definitions import ROOT, CIFAR_DATA_PATH
-from src.experiments import Experiment
-from src.function_approximators import DeepNet
-from src.util import turn_off_debugging_processes, get_random_seeds, access_dict
-from src.util.neural_networks import layer, add_noise_to_weights, init_weights_kaiming, get_optimizer, scale_weights
-from src.problems import CifarDataSet
-from src.util.data_preprocessing_and_transformations import ToTensor, RandomGaussianNoise, RandomErasing
-from src.file_management.file_and_directory_management import save_experiment_config_file
+from mlproj_manager.definitions import ROOT, CIFAR_DATA_PATH
+from mlproj_manager.experiments import Experiment
+from mlproj_manager.function_approximators import DeepNet
+from mlproj_manager.util import turn_off_debugging_processes, get_random_seeds, access_dict
+from mlproj_manager.util.neural_networks import layer, add_noise_to_weights, init_weights_kaiming, get_optimizer, scale_weights
+from mlproj_manager.problems import CifarDataSet
+from mlproj_manager.util.data_preprocessing_and_transformations import ToTensor, RandomGaussianNoise, RandomErasing
+from mlproj_manager.file_management.file_and_directory_management import save_experiment_config_file
 os.chdir(ROOT)
 
 

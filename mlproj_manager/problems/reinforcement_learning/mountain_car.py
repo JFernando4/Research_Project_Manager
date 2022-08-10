@@ -1,5 +1,5 @@
 import numpy as np
-from src.problems.reinforcement_learning.abstract_rl_environment import RLEnvironment
+from mlproj_manager.problems.reinforcement_learning.abstract_rl_environment import RLEnvironment
 
 
 class MountainCar(RLEnvironment):

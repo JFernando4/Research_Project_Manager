@@ -3,9 +3,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 # from project files
-from src.file_management import aggregate_large_results, aggregate_results
-from src.plots_and_summaries.summaries import compute_average_and_standard_error
-from src.plots_and_summaries.plotting_functions import line_plot_with_error_bars, lighten_color, color_fader
+from mlproj_manager.file_management import aggregate_large_results, aggregate_results
+from mlproj_manager.plots_and_summaries.summaries import compute_average_and_standard_error
+from mlproj_manager.plots_and_summaries.plotting_functions import line_plot_with_error_bars, lighten_color, color_fader
 
 
 def load_binned_results(results_dir, results_name, bin_size, bin_axis, denominator):

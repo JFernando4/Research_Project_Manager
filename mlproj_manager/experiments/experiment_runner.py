@@ -8,8 +8,8 @@ import os
 import argparse
 from importlib.machinery import SourceFileLoader
 # from project files
-from src.experiments.abstract_experiment import Experiment
-from src.experiments.register_experiment import load_experiment_registry, register_experiment
+from mlproj_manager.experiments.abstract_experiment import Experiment
+from mlproj_manager.experiments.register_experiment import load_experiment_registry, register_experiment
 
 
 def parse_arguments():
