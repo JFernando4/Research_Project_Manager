@@ -63,7 +63,6 @@ Next, schedule your jobs using the following command:
         --experiment-name mnist_example --experiment-config-path ./examples/mnist_example/config.json \
         --use-slurm --slurm-config-path ./examples/mnist_example/slurm_config.json --verbose
 
-You should see the output of running the command `sbatch` in slurm, which is simply a number corresponding to
-the ID of the job that was just schedule. You'll see several of these depending on the number of jobs that were
-scheduled.
+You should see the output of running the command `sbatch` in slurm: `Submitted batch job $JOB-ID`. You'll see 
+several of these depending on the number of jobs that were scheduled.
 
