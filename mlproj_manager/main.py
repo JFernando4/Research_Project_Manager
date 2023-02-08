@@ -39,7 +39,7 @@ def retrieve_indices(experiments_dicts: list, exp_config_dict: dict):
     :param experiments_dicts: list with the dictionaries containing the parameters for each experiment
     :param exp_config_dict: dictionary containing the experiment parameters
     :return: a list of tuples containing (experiment_dictionary, experiment_directory, missing_indices) for each
-             experiments that have yet to finish all their runs
+             experiment that have yet to finish all their runs
     """
     valid_experiment_dicts = []
     for exp_dict in experiments_dicts:
@@ -152,7 +152,7 @@ def main():
     exp_config = read_json_file(exp_config_path)
 
     # read slurm configuration
-    slurm_config=None
+    slurm_config = None
     if parsed_args.use_slurm:
         slurm_config_path = parsed_args.slurm_config_path
         slurm_config = read_json_file(slurm_config_path)
