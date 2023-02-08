@@ -10,5 +10,5 @@
   "max_runs_per_job": 10,
   "main_dir": "/home/jfernan/Research_Project_Manager/examples/mnist_example",
   "account": "def-sutton",
-  "gpus-per-node": "0"
+  "gpus-per-node": "1"
 }

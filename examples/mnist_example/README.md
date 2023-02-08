@@ -24,7 +24,7 @@ The experiment slurm config file contains this information:
       "max_runs_per_job": 10,
       "main_dir": "/home/jfernan/Research_Project_Manager",
       "account": "def-sutton",
-      "gpus-per-node": "0"
+      "gpus-per-node": "1"
     }
 
 Let's go through all the options used in the config file:
