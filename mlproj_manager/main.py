@@ -51,13 +51,14 @@ def retrieve_indices(experiments_dicts: list, exp_config_dict: dict):
     return valid_experiment_dicts
 
 
-def run_jobs(valid_experiment_dicts: list, exp_name: str, use_slurm: bool, slurm_config=None):
+def run_jobs(valid_experiment_dicts: list, exp_name: str, use_slurm: bool, slurm_config=None, verbose=False):
     """
-    Runs jobs in the serially in the local machine or schedules the jobs using slurm
+    Runs jobs in serially in the local machine or schedules the jobs using slurm
     :param valid_experiment_dicts:  (list) list of dictionaries containing the parameters for the experiments
-    :param exp_name: (str) name of the experiment ot be ran
+    :param exp_name: (str) name of the experiment ot be run
     :param use_slurm: (bool) indicates whether to schedule jobs using slurm
     :param slurm_config: (str or None) config file for scheduling slurm jobs
+    :param verbose:(bool) indicates whether to print status messages
     :return:
     """
 
@@ -66,29 +67,30 @@ def run_jobs(valid_experiment_dicts: list, exp_name: str, use_slurm: bool, slurm
         missing_indices = list(experiment["indices"])
         if use_slurm:       # run slurm jobs
             assert slurm_config is not None
-            run_slurm_jobs(experiment, missing_indices, slurm_config, exp_name)
+            run_slurm_jobs(experiment, missing_indices, slurm_config, exp_name, verbose=verbose)
         else:               # run jobs serially in machine
-            run_serial_jobs(experiment, missing_indices, exp_name)
+            run_serial_jobs(experiment, missing_indices, exp_name, verbose=verbose)
 
 
-def run_slurm_jobs(experiment: dict, missing_indices: list, slurm_config: dict, exp_name: str):
+def run_slurm_jobs(experiment: dict, missing_indices: list, slurm_config: dict, exp_name: str, verbose=False):
     """
     Groups experiments according to the maximum number of rums per job in slurm_config and creates a corresponding
     bash file to schedule the job using slurm, then it schedules the job
     :param experiment: (dict) dictionary with all the parameters necessary to run the experiment
-    :param missing_indices: (list) indices of the remaining experiments to be ran
+    :param missing_indices: (list) indices of the remaining experiments to be run
     :param slurm_config: (dict) dictionary with the slurm parameters
     :param exp_name: name of experiment
+    :param verbose:(bool) indicates whether to print status messages
     """
 
     num_processed = 0           # number of processed runs
     current_job = 0             # current job number
-    current_exp_batch = []      # list of experiments to be ran in batch
+    current_exp_batch = []      # list of experiments to be run in batch
 
     while num_processed != len(missing_indices):    # continue until all missing indices have been scheduled
         temp_job_num = num_processed + len(current_exp_batch)
         temp_dict = {**experiment["dict"], "index": int(missing_indices[temp_job_num]),
-                     "plot_results": False, "verbose": False, "debug": False}
+                     "plot_results": False, "verbose": verbose, "debug": False}
         current_exp_batch.append(temp_dict)
 
         # when batch size matches max_runs_per_job or when this is the last missing index, then schedule job
@@ -106,12 +108,13 @@ def run_slurm_jobs(experiment: dict, missing_indices: list, slurm_config: dict, 
             time.sleep(0.5)
 
 
-def run_serial_jobs(experiment: dict, missing_indices: list, exp_name: str):
+def run_serial_jobs(experiment: dict, missing_indices: list, exp_name: str, verbose=False):
     """
     For running job serially in the local machine
     :param experiment: (dict) dictionary with all the parameters necessary to run the experiment
-    :param missing_indices: (list) indices of the remaining experiments to be ran
+    :param missing_indices: (list) indices of the remaining experiments to be run
     :param exp_name: (str) name of the experiment
+    :param verbose:(bool) indicates whether to print status messages
     """
     exp_registry = load_experiment_registry()
     if exp_name not in exp_registry:
@@ -123,7 +126,7 @@ def run_serial_jobs(experiment: dict, missing_indices: list, exp_name: str):
     for idx in missing_indices:
         print("Running index: {0}".format(idx))
         temp_dict = {**experiment["dict"], "index": int(idx), "plot_results": False, "debug": False}
-        exp = exp_class(temp_dict, experiment["dir"], run_index=idx, verbose=False)
+        exp = exp_class(temp_dict, experiment["dir"], run_index=idx, verbose=verbose)
         exp.run()
         exp.store_results()
 
@@ -135,6 +138,7 @@ def main():
     arguments.add_argument("--experiment-config-path", action="store", type=str, required=True)
     arguments.add_argument("--slurm-config-path", action="store", type=str, required=False)
     arguments.add_argument("--use-slurm", action="store_true", default=False)
+    arguments.add_argument("--verbose", action="store_true", default=False)
     parsed_args = arguments.parse_args()
 
     experiment_name = parsed_args.experiment_name
@@ -158,7 +162,8 @@ def main():
     valid_experiment_dicts = retrieve_indices(experiment_dicts, exp_config)
 
     # for each valid index generate slurm file and run it
-    run_jobs(valid_experiment_dicts, experiment_name, use_slurm=parsed_args.use_slurm, slurm_config=slurm_config)
+    run_jobs(valid_experiment_dicts, experiment_name, use_slurm=parsed_args.use_slurm, slurm_config=slurm_config,
+             verbose=parsed_args.verbose)
 
 
 if __name__ == '__main__':
