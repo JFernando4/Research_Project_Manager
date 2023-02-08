@@ -96,8 +96,12 @@ def run_slurm_jobs(experiment: dict, missing_indices: list, slurm_config: dict, 
         # when batch size matches max_runs_per_job or when this is the last missing index, then schedule job
         if len(current_exp_batch) == slurm_config["max_runs_per_job"] or temp_job_num + 1 == len(missing_indices):
             # write slurm file
-            job_path = write_slurm_file(slurm_config, current_exp_batch, EXPERIMENT_RUNNER,
-                                        exp_dir=experiment["dir"], job_number=current_job, exp_name=exp_name)
+            job_path = write_slurm_file(slurm_config=slurm_config,
+                                        exps_config=current_exp_batch,
+                                        exp_wrapper=EXPERIMENT_RUNNER,
+                                        exp_dir=experiment["dir"],
+                                        job_number=current_job,
+                                        exp_name=exp_name)
             # run job
             os.system("sbatch {0}".format(job_path))
             # restart everything and increment variables
