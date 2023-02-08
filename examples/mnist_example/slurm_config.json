@@ -8,7 +8,7 @@
   "mail-user":"jfhernan@ualberta.ca",
   "cpus-per-task": 4,
   "max_runs_per_job": 10,
-  "main_dir": "/home/jfernan/Research_Project_Manager/examples/mnist_example",
+  "main_dir": "/home/jfernan/Research_Project_Manager",
   "account": "def-sutton",
   "gpus-per-node": "1"
 }
