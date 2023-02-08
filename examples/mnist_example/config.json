@@ -1,0 +1,27 @@
+{
+  "file_management": {
+    "experiment_name": "mnist_example",
+    "data_path": "/home/jfernan/Research_Project_Manager/examples/mnist_example/data",
+    "results_path": "/home/jfernan/Research_Project_Manager/examples/mnist_example/results",
+    "relevant_parameters": ["optimizer", "stepsize", "num_units_per_layer", "num_layers", "gate_function"]
+  },
+
+  "experiment_params": {
+    "training_epochs": 100,
+    "batch_size": 32,
+    "runs": 10
+  },
+
+  "learning_params": {
+    "num_units_per_layer": 500,
+    "num_layers": ["fixed", 1, 2],
+    "gate_function": ["str", "relu", "sigmoid"],
+    "optimizer": ["str", "sgd", "adam"],
+    "num_to_prune": 0,
+    "stepsize": ["fixed", 0.5, 0.2, 0.1]
+  },
+
+  "slurm_parameters": {
+    "max_runs_per_job": 10
+  }
+}

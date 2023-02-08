@@ -1,0 +1,14 @@
+{
+  "job_name": "mnist",
+  "output_dir": "/scratch/jfernan/example/outputs",
+  "output_filename": "mnist-%n-%j.out",
+  "time": "4:00:00",
+  "mem": "8G",
+  "mail-type": "BEGIN,END,FAIL",
+  "mail-user":"jfhernan@ualberta.ca",
+  "cpus-per-task": 4,
+  "max_runs_per_job": 10,
+  "main_dir": "/home/jfernan/Research_Project_Manager/examples/mnist_example",
+  "account": "def-sutton",
+  "gpus-per-node": "0"
+}
