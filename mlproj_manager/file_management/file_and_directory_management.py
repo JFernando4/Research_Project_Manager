@@ -113,7 +113,7 @@ def write_slurm_file(slurm_config: dict, exps_config: list, exp_wrapper: str, ex
         for config in exps_config:
             json_string = json.dumps(config).replace('"', '\\"')
             job_file.writelines('python3 {0} --json_config_string "{1}" --exp_name {2} --results_dir {3}\n\n'.format(
-                exp_wrapper, json_string, exp_name, config["results_path"]))
+                exp_wrapper, json_string, exp_name, exp_dir))
 
         job_file.writelines("deactivate\n")
 
