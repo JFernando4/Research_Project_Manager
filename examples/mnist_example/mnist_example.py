@@ -107,7 +107,8 @@ class MNISTExperiment(Experiment):
             label = sample["label"]
 
             for param in self.net.parameters(): param.grad = None   # apparently faster than optim.zero_grad()
-
+            print(sample["image"].device)
+            for p in self.net.parameters(): print(p.data.device)
             outputs = self.net.forward(image, return_activations=False)
             current_loss = self.loss(outputs, label)
             current_loss.backward()
