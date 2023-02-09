@@ -46,6 +46,8 @@ class MnistDataSet(CustomDataSet):
         self.classes = np.array(classes, np.float32) if classes is not None else np.arange(10)
         assert self.classes.size <= 10, "Cannot select more than 10 classes!"
         self.device = torch.device("cpu") if device is None else device
+        print("(MNIST __init__ after self.device) device: {0}".format(device))
+        print("(MNIST __init__ after self.device) self.device: {0}".format(self.device))
         self.image_norm_type = image_normalization
         self.label_preprocessing = label_preprocessing
         self.use_torch = use_torch
@@ -79,6 +81,7 @@ class MnistDataSet(CustomDataSet):
 
         if self.use_torch:
             print("(preprocess_data function before tensor.to(device)) device: {0}".format(self.data["data"].device))
+            print("(preprocess_data function before tensor.to(device)) self.device: {0}".format(self.device))
             self.data["data"].to(device=self.device)
             print("(preprocess_data function after tensor.to(device)) device: {0}".format(self.data["data"].device))
             self.data["labels"].to(device=self.device)
