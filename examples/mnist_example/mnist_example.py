@@ -25,7 +25,6 @@ class MNISTExperiment(Experiment):
 
         # define torch device
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        print("(__init__ function) self.device: {0}".format(self.device))
 
         """ For reproducibility """
         random_seeds = get_random_seeds()
@@ -75,14 +74,12 @@ class MNISTExperiment(Experiment):
     # -------------------- For manipulating data -------------------- #
     def get_data(self, train=True, return_data_loader=False):
         """ Loads MNIST data set """
-        print("(get_data function) self.device: {0}".format(self.device))
         mnist_data = MnistDataSet(root_dir=self.data_path,
                                   train=train,
                                   device=self.device,
                                   image_normalization="max",
                                   label_preprocessing="one-hot",
                                   use_torch=True)
-        print("(get_data function) device: {0}".format(mnist_data[:]["image"].device))
         if return_data_loader:
             dataloader = DataLoader(mnist_data, batch_size=self.batch_size, shuffle=True, num_workers=0,
                                     pin_memory=False)
@@ -110,7 +107,6 @@ class MNISTExperiment(Experiment):
 
             for param in self.net.parameters(): param.grad = None   # apparently faster than optim.zero_grad()
 
-            print("(train_one_epoch function) device: {0}".format(image.device))
             outputs = self.net.forward(image, return_activations=False)
             current_loss = self.loss(outputs, label)
             current_loss.backward()
@@ -152,9 +148,7 @@ class MNISTExperiment(Experiment):
     def run(self):
 
         # load data
-        print("Loading train data...")
         training_data, training_dataloader = self.get_data(train=True, return_data_loader=True)
-        print("Loading test data...")
         test_data = self.get_data(train=False, return_data_loader=False)
 
         # train network
