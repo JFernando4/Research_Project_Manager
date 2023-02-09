@@ -65,7 +65,7 @@ def main():
     initial_time = time.perf_counter()
     exp = exp_class(exp_params=exp_dict,
                     results_dir=exp_dir,
-                    run_index=exp_dict["run_index"],
+                    run_index=exp_dict["index"],
                     verbose=exp_dict["verbose"])
 
     # run experiment
