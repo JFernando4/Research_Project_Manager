@@ -36,7 +36,7 @@ def main():
     exp_name = parsed_args.exp_name
 
     # read json file from arguments
-    exp_dict = json.loads(parsed_args.json_string)
+    exp_dict = json.loads(parsed_args.json_config_string)
 
     # create the directory that is going to store the results
     exp_dir = parsed_args.exp_dir
