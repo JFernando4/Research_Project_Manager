@@ -82,9 +82,9 @@ class MnistDataSet(CustomDataSet):
         if self.use_torch:
             print("(preprocess_data function before tensor.to(device)) device: {0}".format(self.data["data"].device))
             print("(preprocess_data function before tensor.to(device)) self.device: {0}".format(self.device))
-            self.data["data"].to(device=self.device)
+            self.data["data"] = self.data["data"].to(device=self.device)
             print("(preprocess_data function after tensor.to(device)) device: {0}".format(self.data["data"].device))
-            self.data["labels"].to(device=self.device)
+            self.data["labels"] = self.data["labels"].to(device=self.device)
 
     def partition_data(self):
         #TODO: I'll implement this later if necessary, this is just a placeholder in the meantime
