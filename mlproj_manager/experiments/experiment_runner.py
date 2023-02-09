@@ -50,7 +50,8 @@ def main():
     if in_registry:
         exp_file_path, exp_class_name = experiment_registry[exp_name]
     else:
-        assert hasattr(parsed_args, "exp_file_path") and hasattr(parsed_args, "exp_class_name")
+        assert hasattr(parsed_args, "exp_file_path") and hasattr(parsed_args, "exp_class_name"), \
+            "Cannot register experiment without exp_file_path and exp_class_name"
         exp_file_path = parsed_args.exp_file_path
         exp_class_name = parsed_args.exp_class_name
         register_experiment(exp_name, exp_file_path, exp_class_name)
