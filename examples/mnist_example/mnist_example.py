@@ -25,6 +25,7 @@ class MNISTExperiment(Experiment):
 
         # define torch device
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        print("(__init__ function) self.device: {0}".format(self.device))
 
         """ For reproducibility """
         random_seeds = get_random_seeds()
@@ -74,6 +75,7 @@ class MNISTExperiment(Experiment):
     # -------------------- For manipulating data -------------------- #
     def get_data(self, train=True, return_data_loader=False):
         """ Loads MNIST data set """
+        print("(get_data function) self.device: {0}".format(self.device))
         mnist_data = MnistDataSet(root_dir=self.data_path,
                                   train=train,
                                   device=self.device,

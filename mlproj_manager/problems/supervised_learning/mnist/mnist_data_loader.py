@@ -40,6 +40,7 @@ class MnistDataSet(CustomDataSet):
         :param use_torch (bool, optional): if true, uses torch tensors to represent the data, otherwise, uses np array
         """
         super().__init__(root_dir)
+        print("(MNIST __init__) device: {0}".format(device))
         self.train = train
         self.transform = transform
         self.classes = np.array(classes, np.float32) if classes is not None else np.arange(10)
