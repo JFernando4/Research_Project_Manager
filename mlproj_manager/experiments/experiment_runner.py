@@ -39,7 +39,7 @@ def main():
     exp_dict = json.loads(parsed_args.json_config_string)
 
     # create the directory that is going to store the results
-    exp_dir = parsed_args.exp_dir
+    exp_dir = parsed_args.results_dir
     os.makedirs(exp_dir, exist_ok=True)
 
     # set up appropriate experiment
