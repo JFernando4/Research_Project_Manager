@@ -80,7 +80,7 @@ class MNISTExperiment(Experiment):
                                   image_normalization="max",
                                   label_preprocessing="one-hot",
                                   use_torch=True)
-
+        print("(get_data function) device: {0}".format(mnist_data[:]["image"].device))
         if return_data_loader:
             dataloader = DataLoader(mnist_data, batch_size=self.batch_size, shuffle=True, num_workers=0,
                                     pin_memory=False)
@@ -107,8 +107,8 @@ class MNISTExperiment(Experiment):
             label = sample["label"]
 
             for param in self.net.parameters(): param.grad = None   # apparently faster than optim.zero_grad()
-            print(sample["image"].device)
-            for p in self.net.parameters(): print(p.data.device)
+
+            print("(train_one_epoch function) device: {0}".format(image.device))
             outputs = self.net.forward(image, return_activations=False)
             current_loss = self.loss(outputs, label)
             current_loss.backward()
@@ -150,7 +150,9 @@ class MNISTExperiment(Experiment):
     def run(self):
 
         # load data
+        print("Loading train data...")
         training_data, training_dataloader = self.get_data(train=True, return_data_loader=True)
+        print("Loading test data...")
         test_data = self.get_data(train=False, return_data_loader=False)
 
         # train network

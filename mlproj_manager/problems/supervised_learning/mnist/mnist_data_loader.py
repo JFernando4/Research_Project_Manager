@@ -65,7 +65,7 @@ class MnistDataSet(CustomDataSet):
     def preprocess_data(self):
         """
         Reshapes the data into the correct dimensions, converts it to the correct type, and normalizes the data if
-        if specified
+        specified
         """
         self.data["data"] = self.data["data"].float() if self.use_torch else np.float32(self.data["data"])
         self.data["data"] = normalize(self.data["data"], norm_type=self.image_norm_type,
@@ -77,7 +77,9 @@ class MnistDataSet(CustomDataSet):
         self.data["labels"] = torch.tensor(new, dtype=torch.float32) if self.use_torch else np.float32(new)
 
         if self.use_torch:
+            print("(preprocess_data function before tensor.to(device)) device: {0}".format(self.data["data"].device))
             self.data["data"].to(device=self.device)
+            print("(preprocess_data function after tensor.to(device)) device: {0}".format(self.data["data"].device))
             self.data["labels"].to(device=self.device)
 
     def partition_data(self):
