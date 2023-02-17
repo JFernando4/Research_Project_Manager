@@ -163,6 +163,33 @@ def load_experiment_results(results_dir: str, results_name: str):
     return results_array
 
 
+def get_filenames_for_parameter_sweep(param_combination: str, results_dir: str):
+    """
+    Given a string of the form:
+        param1-val1_param2-val2_param3-*_param4-val4 (1)
+    where val3 is replaced with a *, the function returns a list of filenames where * is replaced with each possible
+    value of param3 while keeping all other param-val pairs constant.
+    param param_combination: string of the same form as (1)
+    results_d
+    """
+    filenames = []
+    pc_split = param_combination.split("*")
+
+    for fn in os.listdir(results_dir):
+        if pc_split[0] in fn and pc_split[1] in fn:
+            param_val = fn.replace(pc_split[0], "").replace(pc_split[1], "")
+            try:
+                param_val = float(param_val)
+            except ValueError:
+                param_val = param_val
+
+            filenames.append([fn, param_val])
+
+    filenames.sort(key=lambda x: x[1])      # sort according to the parameter value
+
+    return [entry[0] for entry in filenames]
+
+
 # ---*---*---*---*---*---*--- For aggregating files ---*---*---*---*---*---*--- #
 def bin_1d_array(array_1d: np.ndarray, bin_size: int):
     """

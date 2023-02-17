@@ -11,7 +11,7 @@ from mlproj_manager.function_approximators import DeepNet
 from mlproj_manager.util import turn_off_debugging_processes, get_random_seeds, access_dict
 from mlproj_manager.util.neural_networks import layer, init_weights_kaiming, get_optimizer
 from mlproj_manager.problems import MnistDataSet
-os.chdir(ROOT)
+# os.chdir(ROOT)
 
 
 class MNISTExperiment(Experiment):

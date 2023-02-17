@@ -1,0 +1,24 @@
+{
+  "file_management": {
+    "experiment_name": "mnist_example",
+    "data_path": "./examples/mnist_example/data",
+    "results_path": "./examples/mnist_example/results",
+    "relevant_parameters": ["optimizer", "stepsize", "num_units_per_layer", "num_layers", "gate_function"]
+  },
+
+  "experiment_params": {
+    "training_epochs": 25,
+    "batch_size": 32,
+    "runs": 10
+  },
+
+  "learning_params": {
+    "num_units_per_layer": 100,
+    "num_layers": ["fixed", 1, 2],
+    "gate_function": ["str", "relu"],
+    "optimizer": ["str", "sgd"],
+    "num_to_prune": 0,
+    "stepsize": ["fixed", 0.5, 0.2, 0.1, 0.05, 0.02, 0.01]
+  }
+
+}

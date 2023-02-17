@@ -9,7 +9,7 @@ The parameters of the experiment are specified in `config.json`.
 Given the different parameters, it would take a long time to run it serially in a local computer.
 Thus, this is the kind of experiment that would be best run in parallel using slurm. 
 
-## Config files
+### Config files
 The experiment slurm config file contains this information:
 
     {
@@ -48,7 +48,7 @@ experiment file is located, but the path to where the source code of the experim
 
 These are all the slurm options supported by `mlproj_manager=0.0.2`.
 
-## How to set up and run the experiment
+### How to set up and run the experiment
 First, while in the `Research_Project_Manager` directory run these two lines:
 
     export PYTHONPATH=.
@@ -65,4 +65,7 @@ Next, schedule your jobs using the following command:
 
 You should see the output of running the command `sbatch` in slurm: `Submitted batch job $JOB-ID`. You'll see 
 several of these depending on the number of jobs that were scheduled.
+
+# Plotting Results
+
 
