@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 # from project files
-from mlproj_manager.file_management import aggregate_large_results, aggregate_results
+from mlproj_manager.file_management import aggregate_large_results, aggregate_results, get_names_for_parameter_sweep
 from mlproj_manager.plots_and_summaries.summaries import compute_average_and_standard_error
 from mlproj_manager.plots_and_summaries.plotting_functions import line_plot_with_error_bars, lighten_color, color_fader
 
@@ -107,39 +107,67 @@ def handle_multi_epoch_plot(plot_arguments, results_dir: str, results_name: str)
     pass
 
 
-def handle_parameter_sweep_plot(plot_arguments, results_dir: str, results_name: str):
+def aggregate_run_results_for_parameter_sweep(results: np.ndarray, aggregation_method: str):
+    """
+    Aggregates the results of each run of a parameter combination. Then, computes the average and standard error over
+    all the runs.
+    param results: 2-dimensional numpy array with results
+    param aggregation_method: string indicating how to aggregate the results
+                                - avg: take the average over each run
+                                - sum: take the sum over each sum
+                                - last: use the last column in the results
+    return: average (float), standard error (float)
+    """
+
+    assert len(results.shape) == 2, "There are too many dimensions in the array"
+    if aggregation_method == "avg":
+        temp_results = np.average(results, axis=-1)
+    elif aggregation_method == "ste":
+        temp_results = np.sum(results, axis=-1)
+    elif aggregation_method == "last":
+        temp_results = results[:, -1]
+    else:
+        raise ValueError("Invalid aggregation method: {0}".format(aggregation_method))
+
+    return compute_average_and_standard_error(temp_results)
+
+
+def handle_parameter_sweep_plot(plot_arguments, results_dir: str, results_name: str, verbose=False):
     parameter_combinations = [item for item in plot_arguments.parameter_combination.split(",")]
-    colors = np.array([item for item in plot_arguments.colors.split(",")], dtype=str).reshape(1, -1)
+    colors = np.array([item for item in plot_arguments.colors.split(",")], dtype=str)
 
-    for param_comb in enumerate(parameter_combinations):
+    for i, param_comb in enumerate(parameter_combinations):
 
-        temp_param_comb = []
         assert isinstance(param_comb, str)
-        param_comb_split = param_comb.split("*")
-        for filename in os.listdir(results_dir):
-            if param_comb_split[0] in filename and param_comb_split[1] in filename:
-                param_val = filename.replace(param_comb[0], "").replace(param_comb_split[1], "")
-                try:
-                    param_val = float(param_val)
-                except ValueError:
-                    param_val = param_val
-                temp_param_comb.append([filename, param_val])
+        temp_param_comb, temp_param_vals = get_names_for_parameter_sweep(param_comb,
+                                                                         results_dir,
+                                                                         return_parameter_values=True)
+        x_axis = np.array(temp_param_vals, dtype=np.float32)
+        avg_param_performance = np.zeros(len(temp_param_comb), dtype=np.float32)
+        ste_param_performance = np.zeros(len(temp_param_comb), dtype=np.float32)
 
-        temp_param_comb.sort(key=lambda x: x[1])    # sort according to parameter value
-
-        for j, param_comb in enumerate(parameter_combinations):
-            temp_dir = os.path.join(results_dir, param_comb)
-            results = load_binned_results(results_dir=temp_dir,
+        for j, tpc in enumerate(temp_param_comb):
+            results = load_binned_results(results_dir=os.path.join(results_dir, tpc),
                                           results_name=results_name,
                                           bin_size=plot_arguments.bin_size,
                                           bin_axis=plot_arguments.bin_axis,
                                           denominator=plot_arguments.denominator)
 
-            plot_lines(results, colors[j])
+            avg, ste = aggregate_run_results_for_parameter_sweep(results, plot_arguments.run_aggregation_method)
+            avg_param_performance[j] += avg
+            ste_param_performance[j] += ste
 
-        plt.ylim((float(lim) for lim in plot_arguments.ylims.split(",")))
+            if verbose:
+                print("Parameter Combination: {0}\n\tAverage: {1:.4f}\n\tStandard Error: {2:.4f}".format(tpc, avg, ste))
 
-        handle_plot_display(plot_arguments)
+        line_plot_with_error_bars(results=avg_param_performance,
+                                  error=ste_param_performance,
+                                  x_axis=x_axis,
+                                  color=colors[i],
+                                  light_color=lighten_color(colors[i], 0.25))
+
+    plt.ylim((float(lim) for lim in plot_arguments.ylims.split(",")))
+    handle_plot_display(plot_arguments)
 
 
 def parse_arguments():
@@ -153,8 +181,12 @@ def parse_arguments():
                            help="Comma separated list. Each entry has the form parameter1-val1_parameter2_val2_....")
     arguments.add_argument("--results-name", action="store", type=str, required=True,
                            help="Name of the type of result. For example: ")
-    # arguments.add_argument("--runs-aggregation-method", type=str, default="avg", choices=["avg", "sum", "none"],
-    #                        help="Indicates how to aggregate the results of multiple runs.")
+    arguments.add_argument("--run-aggregation-method", type=str, default="avg",
+                           choices=["avg",          # average over whole run
+                                    "sum",          # sum over whole run
+                                    "none",         # do nothing
+                                    "last"],        # last result in the run
+                           help="Indicates how to aggregate the results for each run.")
     arguments.add_argument("--bin-size", action="store", type=int, default=100)
     arguments.add_argument("--bin-axis", action="store", type=int, default=1)
     arguments.add_argument("-c", "--colors", type=str, default="tab:blue", action="store", help="comma separated list")
@@ -167,6 +199,7 @@ def parse_arguments():
     arguments.add_argument("-ylims", type=str, default="0.0,1.0", help="comma separated list")
     arguments.add_argument("-col", type=int, default=-1)
     arguments.add_argument("-sp", "--save-plot", action="store", type=str, default=None)
+    arguments.add_argument("--verbose", action="store_true", default=False)
     return arguments.parse_args()
 
 
@@ -181,7 +214,7 @@ def main():
     elif plot_type == "multi_epoch":
         handle_multi_epoch_plot(plot_args, results_dir, results_name)
     elif plot_type == "parameter_sweep":
-        handle_parameter_sweep_plot(plot_args, results_dir, results_name)
+        handle_parameter_sweep_plot(plot_args, results_dir, results_name, verbose=plot_args.verbose)
     else:
         raise ValueError
 
