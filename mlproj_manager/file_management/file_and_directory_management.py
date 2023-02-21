@@ -163,16 +163,19 @@ def load_experiment_results(results_dir: str, results_name: str):
     return results_array
 
 
-def get_filenames_for_parameter_sweep(param_combination: str, results_dir: str):
+def get_names_for_parameter_sweep(param_combination: str, results_dir: str, return_parameter_values=False):
     """
     Given a string of the form:
         param1-val1_param2-val2_param3-*_param4-val4 (1)
-    where val3 is replaced with a *, the function returns a list of filenames where * is replaced with each possible
+    where val3 is replaced with a *, the function returns a list of names where * is replaced with each possible
     value of param3 while keeping all other param-val pairs constant.
+
     param param_combination: string of the same form as (1)
-    results_d
+    param results_dir: directory with all the results with name format equal to (1) but with val3 instead of *
+    param return_parameter_values: bool indicating whether to return the parameter_values
+    returns: list of names as explained above
     """
-    filenames = []
+    names = []
     pc_split = param_combination.split("*")
 
     for fn in os.listdir(results_dir):
@@ -183,11 +186,13 @@ def get_filenames_for_parameter_sweep(param_combination: str, results_dir: str):
             except ValueError:
                 param_val = param_val
 
-            filenames.append([fn, param_val])
+            names.append([fn, param_val])
 
-    filenames.sort(key=lambda x: x[1])      # sort according to the parameter value
+    names.sort(key=lambda x: x[1])      # sort according to the parameter value
 
-    return [entry[0] for entry in filenames]
+    if return_parameter_values:
+        return [entry[0] for entry in names], [entry[1] for entry in names]
+    return [entry[0] for entry in names]
 
 
 # ---*---*---*---*---*---*--- For aggregating files ---*---*---*---*---*---*--- #
