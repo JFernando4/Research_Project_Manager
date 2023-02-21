@@ -53,11 +53,12 @@ def parse_plot_kwarg(keyword_dict: dict):
     return arguments
 
 
-def line_plot_with_error_bars(results: np.ndarray, error: np.ndarray, **kwargs):
+def line_plot_with_error_bars(results: np.ndarray, error: np.ndarray, x_axis=None, **kwargs):
     """
     Creates a line plot with a shaded region of results ± error
     :param results: (np.array or list) array containing the results
     :param error: (np.array or list) array containing some error measure, eg., standard error
+    :param x_axis: x_axis of the plot, should be same length as results or None
     :param kwargs: keyword arguments to be parsed by function parse_plot_kwarg
     :return: None, but it adds to the current matplotlib figure
     """
@@ -65,7 +66,11 @@ def line_plot_with_error_bars(results: np.ndarray, error: np.ndarray, **kwargs):
 
     arguments = parse_plot_kwarg(kwargs)
 
-    x_axis = np.arange(results.size)
+    if x_axis is None:
+        x_axis = np.arange(results.size)
+    assert isinstance(x_axis, np.ndarray)
+    assert x_axis.size == results.size
+
     plt.plot(x_axis, results, label=arguments["label"], color=arguments["color"], linewidth=arguments["linewidth"],
              linestyle=arguments["linestyle"], alpha=arguments["alpha"])
     plt.fill_between(x_axis, results - error, results + error, color=arguments["light_color"], alpha=arguments["alpha"])
