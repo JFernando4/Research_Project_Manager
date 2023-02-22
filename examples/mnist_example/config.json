@@ -18,7 +18,7 @@
     "gate_function": ["str", "relu", "sigmoid"],
     "optimizer": ["str", "sgd", "adam"],
     "num_to_prune": 0,
-    "stepsize": ["fixed", 0.5, 0.2, 0.1]
+    "stepsize": ["fixed", 1.0, 0.5, 0.2, 0.1]
   },
 
   "slurm_parameters": {
