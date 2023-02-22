@@ -89,6 +89,7 @@ def run_slurm_jobs(experiment: dict, missing_indices: list, slurm_config: dict, 
 
     while num_processed != len(missing_indices):    # continue until all missing indices have been scheduled
         temp_job_num = num_processed + len(current_exp_batch)
+        print(missing_indices[temp_job_num])
         temp_dict = {**experiment["dict"], "index": int(missing_indices[temp_job_num]),
                      "plot_results": False, "verbose": verbose, "debug": False}
         current_exp_batch.append(temp_dict)
