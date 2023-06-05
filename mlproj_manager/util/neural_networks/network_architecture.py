@@ -44,3 +44,14 @@ def get_activation(name):
         return lambda x: x
     else:
         raise ValueError("{0} is not a valid activation!")
+
+
+def get_activation_module(name: str):
+    if name == "relu":
+        return torch.nn.ReLU()
+    elif name == "tanh":
+        return torch.nn.Tanh()
+    elif name == "sigmoid":
+        return torch.nn.Sigmoid()
+    else:
+        raise ValueError("{0} is not a valid activation!".format(name))
