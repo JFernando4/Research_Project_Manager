@@ -6,7 +6,7 @@ import numpy as np
 from mlproj_manager.util.neural_networks.network_architecture import layer, get_activation, get_conv_layer_output_dims, get_activation_module
 
 
-class GeneralDeepNet(nn.Module):
+class GenericDeepNet(nn.Module):
     """ Builds a conv net with a specified number of layers and dimensions """
 
     def __init__(self, architecture, image_dims, use_bias=True):
@@ -25,7 +25,7 @@ class GeneralDeepNet(nn.Module):
         :param image_dims:  the width and height of the input images (int, ) x 2
         :param use_bias: (bool) whether to use a bias term in  each layer
         """
-        super(GeneralDeepNet, self).__init__()
+        super(GenericDeepNet, self).__init__()
 
         # check that each layer has the correct format
         assert all(isinstance(a_layer, layer) for a_layer in architecture)
@@ -123,7 +123,7 @@ def main():
         layer(type="linear",    parameters=(None, num_classes),              gate=None)          # output layer
     ]
 
-    network = GeneralDeepNet(architecture, (32, 32))
+    network = GenericDeepNet(architecture, (32, 32))
     network.apply(lambda z: xavier_init_weights(z, normal=True))
 
     image = torch.normal(0, 0.5, (3, 32, 32))
