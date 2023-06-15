@@ -57,8 +57,11 @@ def main():
         register_experiment(exp_name, exp_file_path, exp_class_name)
 
     # load experiment module
+    initial_time = time.perf_counter()
     experiment_module = SourceFileLoader(exp_class_name, exp_file_path).load_module()
     exp_class = getattr(experiment_module, exp_class_name)
+    final_time = time.perf_counter()
+    print("Time it took to load module in minutes: {0:.2f}".format((final_time - initial_time) / 60))
     assert issubclass(exp_class, Experiment)
     
     # initialize experiment
