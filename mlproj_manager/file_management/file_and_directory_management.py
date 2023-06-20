@@ -135,6 +135,75 @@ def save_experiment_config_file(results_dir: str, exp_params: dict, run_index: i
     print("Config file successfully stored!")
 
 
+def concatenate_results(results_dir: str, store_concatenated_results: bool = True, indices: list = None):
+    """
+    Given a directory containing results from different runs of an experiment where each file is named
+    "index-$RUN_NUMBER.py", it reads all the files and creates a list with all the results ordered based on the
+    $RUN_NUMBER in ascending order. If specified, it stores the list into a file named
+    "indices-$MIN_RUN_NUMBER-$MAX_RUN_NUMBER.py"
+
+    param results_dir: directory containing np files, each file corresponding to a different index
+    param store_concatenated_results: bool indicating whether to store the list in memory
+    param indices: list of int corresponding to the $RUN_NUMBER of each index
+    return: np array with results
+    """
+
+    if indices is None:
+        indices = get_indices(results_dir)
+    concatenated_results_file_name = "indices-{0}-{1}.npy".format(indices[0], indices[-1])
+    concatenated_results_file_path = os.path.join(results_dir, concatenated_results_file_name)
+    if os.path.isfile(concatenated_results_file_path):
+        return np.load(concatenated_results_file_path)
+
+    results = []
+    for index in indices:
+        temp_file_path = os.path.join(results_dir, "index-{0}.npy".format(index))
+        results.append(np.load(temp_file_path))
+    results = np.array(results)
+
+    if store_concatenated_results:
+        np.save(concatenated_results_file_path, results)
+        print("Results successfully saved at: {0}".format(concatenated_results_file_path))
+
+    return results
+
+
+def get_indices(results_dir: str):
+    """
+    Given a directory containing files named "index-$RUN_NUMBER.py", the function returns a list of indices ordered in
+    ascending order
+
+    param results_dir: path to some directory
+    return: list of int corresponding to the indices of the files in ascending order
+    """
+    indices = []
+    for file_name in os.listdir(results_dir):
+        if "index" not in file_name: continue
+        striped_file_name = file_name.split(".")[0]     # removes file format from file name
+        run_number = striped_file_name.split("-")[1]
+        indices.append(int(run_number))
+    indices.sort(reverse=False)
+    return indices
+
+
+def get_file_paths_that_contain_keywords(dir_path: str, keyword_tuple: tuple):
+
+    if not os.path.isdir(dir_path):
+        raise ValueError("The path does not correspond to a directory.\n\tPath: {0}".format(dir_path))
+
+    file_paths = []
+
+    for file_name in os.listdir(dir_path):
+        file_path = os.path.join(dir_path, file_name)
+
+        if not os.path.isfile(file_path): continue
+
+        if all(keyword in file_name for keyword in keyword_tuple):
+            file_paths.append(file_path)
+
+    return file_paths
+
+
 # ---*---*---*---*---*---*--- For loading files ---*---*---*---*---*---*--- #
 def read_json_file(filepath: str):
     """
