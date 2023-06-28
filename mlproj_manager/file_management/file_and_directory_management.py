@@ -158,7 +158,11 @@ def concatenate_results(results_dir: str, store_concatenated_results: bool = Tru
     results = []
     for index in indices:
         temp_file_path = os.path.join(results_dir, "index-{0}.npy".format(index))
-        results.append(np.load(temp_file_path))
+        try:
+            results.append(np.load(temp_file_path))
+        except ValueError:
+            print("Couldn't load file in this path: {0}".format(temp_file_path))
+            raise ValueError
     results = np.array(results)
 
     if store_concatenated_results:
