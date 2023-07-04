@@ -1,0 +1,35 @@
+{
+  "file_management": {
+    "experiment_name": "mnist_example",
+    "data_path": "./examples/mnist_example/data",
+    "results_path": "./examples/mnist_example/specific_parameter_results",
+    "relevant_parameters": ["optimizer", "stepsize", "num_units_per_layer", "num_layers", "gate_function"]
+  },
+
+  "experiment_params": {
+    "training_epochs": 1,
+    "batch_size": 32,
+    "runs": 10
+  },
+
+  "specific_parameter_combination": [
+    {
+      "num_units_per_layer": 100,
+      "num_layers": 2,
+      "gate_function": "relu",
+      "optimizer": "sgd",
+      "stepsize": 0.01
+    },
+    {
+      "num_units_per_layer": 300,
+      "num_layers": 1,
+      "gate_function": "relu",
+      "optimizer": "sgd",
+      "stepsize": 0.1
+    }
+  ],
+
+  "slurm_parameters": {
+    "max_runs_per_job": 10
+  }
+}
