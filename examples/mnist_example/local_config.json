@@ -7,7 +7,7 @@
   },
 
   "experiment_params": {
-    "training_epochs": 25,
+    "training_epochs": 5,
     "batch_size": 32,
     "runs": 10
   },
