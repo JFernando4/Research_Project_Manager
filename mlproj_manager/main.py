@@ -18,16 +18,38 @@ def get_experiments_dictionaries(exp_config_dict: dict):
     :return: list of dictionaries
     """
 
+    # check if we're running a specific set of parameter combination and create dictionaries
+    run_specific_parameter_combination = ("specific_parameter_combination" in exp_config_dict.keys())
+    if run_specific_parameter_combination:
+        return get_experiments_dictionaries_for_specific_parameter_combinations(exp_config_dict)
+
+    # create dictionaries for all combinations of values of the parameters in exp_config_dict["learning_parameters"]
     init_dict = {**exp_config_dict["file_management"], **exp_config_dict["experiment_params"]}
-    exp_dicts = [init_dict]
+    exp_dictionaries = [init_dict]
     for param, values in exp_config_dict["learning_params"].items():
         new_dicts = []
-        for exp_dict in exp_dicts:
+        for exp_dict in exp_dictionaries:
             param_values = get_param_values(values)
             for val in param_values:
                 temp_dict = {**exp_dict, param: val}
                 new_dicts.append(temp_dict)
-        exp_dicts = new_dicts
+        exp_dictionaries = new_dicts
+    return exp_dictionaries
+
+
+def get_experiments_dictionaries_for_specific_parameter_combinations(exp_config_dict: dict):
+    """
+    Creates a list of dictionaries for a set of specific parameter combination
+    :param exp_config_dict: the dictionary with all the details about the experiment
+    :return list of dictionaries, each corresponding to a specific parameter combination
+    """
+
+    exp_dicts = []
+    for parameter_combination in exp_config_dict["specific_parameter_combination"]:
+        assert isinstance(parameter_combination, dict)
+        temp_exp_dict = {**exp_config_dict["file_management"], **exp_config_dict["experiment_params"],
+                         **parameter_combination}
+        exp_dicts.append(temp_exp_dict)
     return exp_dicts
 
 
