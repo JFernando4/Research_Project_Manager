@@ -66,6 +66,12 @@ Next, schedule your jobs using the following command:
 You should see the output of running the command `sbatch` in slurm: `Submitted batch job $JOB-ID`. You'll see 
 several of these depending on the number of jobs that were scheduled.
 
+For locally running the experiment, use the following command:
+
+    python3 ./mlproj_manager/main.py \
+        --experiment-name mnist_example --experiment-config-path ./examples/mnist_example/local_config.json \
+        --verbose
+
 # Plotting Results
 
 
