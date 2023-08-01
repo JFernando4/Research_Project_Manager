@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 # from project files:
-from mlproj_manager.util.neural_networks.network_architecture import layer, get_activation, get_conv_layer_output_dims, get_activation_module
+from mlproj_manager.util.neural_networks.network_architecture import layer, get_conv_layer_output_dims, get_activation_module
 
 
 class GenericDeepNet(nn.Module):
