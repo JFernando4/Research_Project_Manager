@@ -53,5 +53,7 @@ def get_activation_module(name: str):
         return torch.nn.Tanh()
     elif name == "sigmoid":
         return torch.nn.Sigmoid()
+    elif name == "leaky_relu":
+        return torch.nn.LeakyReLU()
     else:
         raise ValueError("{0} is not a valid activation!".format(name))
