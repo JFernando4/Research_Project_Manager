@@ -31,10 +31,6 @@ class GenericDeepNet(nn.Module):
         assert all(isinstance(a_layer, layer) for a_layer in architecture)
 
         self.architecture = architecture
-        self.activations = []
-        for a_layer in architecture:
-            self.activations.append(get_activation(a_layer.gate))
-
         self.image_dims = image_dims
         self.use_bias = use_bias
 
