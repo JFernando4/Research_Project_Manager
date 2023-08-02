@@ -86,7 +86,7 @@ def handle_config_files_in_directory(config_dir_path: str, zip_dir: bool = True,
     indices = get_indices(config_dir_path)
     zip_file_name = "config_files_indices-{0}-{1}".format(indices[0], indices[-1])
     root_dir, base_dir = os.path.split(config_dir_path)     # splits path into path up to second last dir and last dir
-    zip_file_path_without_format = os.path.join(root_dir, zip_file_name)
+    zip_file_path_without_format = os.path.join(config_dir_path, zip_file_name)
     shutil.make_archive(zip_file_path_without_format, format="zip", root_dir=root_dir, base_dir=base_dir)
 
     if not delete_original_files: return
