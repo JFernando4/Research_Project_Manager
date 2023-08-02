@@ -55,11 +55,21 @@ def save_results_dict(results_dir: str, results_dict: dict, run_index=0):
     :param results_dict: (dict) each key is going to be used as a directory name, use descriptive names
     :param run_index: (int) index of the run
     """
+    attempts = 10
     for results_name, results in results_dict.items():
         temp_results = results if not is_tensor(results) else results.cpu().numpy()
         temp_path = os.path.join(results_dir, results_name)
         os.makedirs(temp_path, exist_ok=True)
-        np.save(os.path.join(temp_path, "index-" + str(run_index) + ".npy"), temp_results)
+        results_path = os.path.join(temp_path, "index-" + str(run_index) + ".npy")
+        for i in range(attempts):
+            try:
+                np.save(results_path, temp_results)
+                np.load(results_path)
+                break
+            except ValueError:
+                print("Attempt number: {0}".format(i + 1))
+                print("Something went wrong when storing results at:\n\t{0}".format(results_path))
+        # np.save(os.path.join(temp_path, "index-" + str(run_index) + ".npy"), temp_results)
         print("{0} was successfully saved!".format(results_name))
 
 
