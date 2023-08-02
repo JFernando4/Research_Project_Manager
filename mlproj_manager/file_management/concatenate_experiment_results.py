@@ -1,6 +1,7 @@
 import argparse
 import os
 import zipfile
+import shutil
 
 from mlproj_manager.file_management import concatenate_results, get_file_paths_that_contain_keywords, get_indices
 
@@ -18,8 +19,8 @@ def read_arguments():
     return arguments.parse_args()
 
 
-def concatenate_files_in_directory(dir_path: str, list_of_file_paths: list, zip_original_files: bool = True,
-                                   delete_original_files: bool = False, raise_warning: bool = True):
+def concatenate_result_files_in_directory(dir_path: str, list_of_file_paths: list, zip_original_files: bool = True,
+                                          delete_original_files: bool = False, raise_warning: bool = True):
     """
     Concatenates results files in the directory into a single file. The result files are assumed to have names using the
     format: "index-$RUN_NUMBER.npy". The concatenated file is stored in dir_path in a file named
@@ -66,6 +67,47 @@ def concatenate_files_in_directory(dir_path: str, list_of_file_paths: list, zip_
         os.remove(file_path)
 
 
+def handle_config_files_in_directory(config_dir_path: str, zip_dir: bool = True, delete_original_files: bool = False,
+                                     raise_warning: bool = True):
+    """
+    Zips all the config files in a directory into a file named: indices-$FIRST-INDEX-$LAST-INDEX.zip
+
+    :param config_dir_path: (str) path to the directory containing config files
+    :param zip_dir: (bool) indicates whether to zip contents in directory
+    :param delete_original_files: (bool) indicates whether to delete original config files
+    :param raise_warning: (bool) indicates whether to warn the user about the files that are about to be deleted
+    return: None
+    """
+
+    delete_original_files = zip_dir and delete_original_files  # only delete files if they're zipped first
+
+    if not zip_dir: return
+    # zip directory
+    indices = get_indices(config_dir_path)
+    zip_file_name = "config_files_indices-{0}-{1}".format(indices[0], indices[-1])
+    root_dir, base_dir = os.path.split(config_dir_path)     # splits path into path up to second last dir and last dir
+    zip_file_path_without_format = os.path.join(root_dir, zip_file_name)
+    shutil.make_archive(zip_file_path_without_format, format="zip", root_dir=root_dir, base_dir=base_dir)
+
+    if not delete_original_files: return
+    # delete original files
+    to_delete_list = []
+    for file_name in os.listdir(config_dir_path):
+        if "zip" not in file_name:
+            to_delete_list.append(os.path.join(config_dir_path, file_name))
+
+    if raise_warning:           # raise warning if indicated
+        warning_message = "The following files are going to be deleted:"
+        for path in to_delete_list:
+            warning_message += "\n\t{0}".format(path)
+        print(warning_message)
+        user_input = input("Enter x to cancel or enter to continue... ")
+        if user_input == "x": return
+
+    for file_path in to_delete_list:
+        os.remove(file_path)
+
+
 def main():
     arguments = read_arguments()
 
@@ -82,19 +124,28 @@ def main():
         # skip any files
         if os.path.isfile(current_dir_path): continue
 
-        file_paths = get_file_paths_that_contain_keywords(current_dir_path, ("index", "npy"))
-        contains_results_files = len(file_paths) > 0
+        results_file_paths = get_file_paths_that_contain_keywords(current_dir_path, ("index", "npy"))
+        contains_results_files = len(results_file_paths) > 0
+        config_file_paths = get_file_paths_that_contain_keywords(current_dir_path, ("index", "json"))
+        contains_config_files = len(config_file_paths) > 0
 
-        if not contains_results_files:
-            list_of_dir_paths = [os.path.join(current_dir_path, name) for name in os.listdir(current_dir_path)]
-            stack_of_dir_path.extend(list_of_dir_paths)
-        else:
+        if contains_results_files:
             if arguments.verbose:
                 print("Concatenating files in: {0}".format(current_dir_path))
-            concatenate_files_in_directory(current_dir_path, file_paths,
-                                           zip_original_files=arguments.zip_original_index_files,
-                                           delete_original_files=arguments.delete_original_index_files,
-                                           raise_warning=not arguments.omit_warnings)
+            concatenate_result_files_in_directory(current_dir_path, results_file_paths,
+                                                  zip_original_files=arguments.zip_original_index_files,
+                                                  delete_original_files=arguments.delete_original_index_files,
+                                                  raise_warning=not arguments.omit_warnings)
+        elif contains_config_files:
+            if arguments.verbose:
+                print("Handling files in: {0}".format(current_dir_path))
+            handle_config_files_in_directory(current_dir_path,
+                                             zip_dir=arguments.zip_original_index_files,
+                                             delete_original_files=arguments.delete_original_index_files,
+                                             raise_warning=not arguments.omit_warnings)
+        else:
+            list_of_dir_paths = [os.path.join(current_dir_path, name) for name in os.listdir(current_dir_path)]
+            stack_of_dir_path.extend(list_of_dir_paths)
 
 
 if __name__ == "__main__":
