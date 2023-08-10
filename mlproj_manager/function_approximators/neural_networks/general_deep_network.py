@@ -74,10 +74,10 @@ class GenericDeepNet(nn.Module):
         for i, module in enumerate(self.network_module_list):
             # apply layer
             x = module(x)
-            # apply mask: this is for shrinking or masking out certain features
-            is_activation = isinstance(module, (torch.nn.ReLU, torch.nn.Sigmoid, torch.nn.Tanh))
-            if return_activations and is_activation:
-                activations += (x, )
+            if return_activations:
+                is_activation = isinstance(module, (torch.nn.ReLU, torch.nn.Sigmoid, torch.nn.Tanh, torch.nn.LeakyReLU))
+                if is_activation:
+                    activations += (x, )
 
         if return_activations:
             return x, activations
