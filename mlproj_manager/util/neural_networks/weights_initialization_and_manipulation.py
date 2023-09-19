@@ -146,3 +146,32 @@ def get_distribution_function(name: str, parameter_values: tuple, use_torch=Fals
             return lambda z: np.random.uniform(lower_bound, upper_bound, z)
     else:
         raise ValueError("{0} is not a valid distribution!".format(name))
+
+
+def apply_regularization(module: torch.nn.Module, parameter_name: str, l1_factor: float = 0.0, l2_factor: float = 0.0,
+                         omit_warning: bool = True):
+    """
+    Applies regularization to the parameters of a module.
+    For L1-regularization it applies
+                        parameter -= l1_factor * sign(parameter)
+    For L2-regularization it applies
+                        parameter -= 2.0 * l2_factor * parameter
+    :param module: a torch nn module
+    :param parameter_name: name of the parameter to which regularization is being applied to
+    :param l1_factor: l1-regularization factor
+    :param l2_factor: l2-regularization factor
+    :param omit_warning: bool indicating whether to warn user about potential misuse
+    :return: None, but modifies the parameters in the module
+    """
+    if not hasattr(module, parameter_name):
+        if not omit_warning:
+            print("The module does not have an attribute named: {0}".format(parameter_name))
+        return
+
+    module_parameters = getattr(module, parameter_name)
+    if l1_factor > 0.0:
+        with torch.no_grad():
+            module_parameters.add_(- l1_factor * torch.sign(module_parameters))
+    if l2_factor > 0.0:
+        with torch.no_grad():
+            module_parameters.add_(- 2.0 * l2_factor * module_parameters)
