@@ -148,8 +148,8 @@ def get_distribution_function(name: str, parameter_values: tuple, use_torch=Fals
         raise ValueError("{0} is not a valid distribution!".format(name))
 
 
-def apply_regularization(module: torch.nn.Module, parameter_name: str, l1_factor: float = 0.0, l2_factor: float = 0.0,
-                         omit_warning: bool = True):
+def apply_regularization_to_module(module: torch.nn.Module, parameter_name: str, l1_factor: float = 0.0,
+                                   l2_factor: float = 0.0, omit_warning: bool = True):
     """
     Applies regularization to the parameters of a module.
     For L1-regularization it applies
@@ -169,9 +169,26 @@ def apply_regularization(module: torch.nn.Module, parameter_name: str, l1_factor
         return
 
     module_parameters = getattr(module, parameter_name)
+    apply_regularization_to_tensor(module_parameters, l1_factor, l2_factor)
+
+
+def apply_regularization_to_tensor(parameter: torch.Tensor, l1_factor: float = 0.0, l2_factor: float = 0.0):
+    """
+    Applies regularization to a tensor
+    For L1-regularization it applies
+                        parameter -= l1_factor * sign(parameter)
+    For L2-regularization it applies
+                        parameter -= 2.0 * l2_factor * parameter
+    If doing both, then it applies
+                        parameter -= 2.0 * l2_factor * parameter + l1_factor * sign(parameter)
+    """
+
+    penalty_term = 0.0
+
     if l1_factor > 0.0:
-        with torch.no_grad():
-            module_parameters.add_(- l1_factor * torch.sign(module_parameters))
+        penalty_term += l1_factor * torch.sign(parameter)
     if l2_factor > 0.0:
-        with torch.no_grad():
-            module_parameters.add_(- 2.0 * l2_factor * module_parameters)
+        penalty_term += 2.0 * l2_factor * parameter
+
+    with torch.no_grad():
+        parameter.add_(- penalty_term)
