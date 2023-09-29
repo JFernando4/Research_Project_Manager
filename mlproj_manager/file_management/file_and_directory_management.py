@@ -44,33 +44,39 @@ def save_experiment_results(results_dir: str, run_index: int, **kwargs):
     if len(kwargs) == 0:
         print("There's nothing to save!")
         return
-    save_index(results_dir, run_index=run_index)
-    save_results_dict(results_dir, results_dict=kwargs, run_index=run_index)
+    successfully_saved = save_results_dict(results_dir, results_dict=kwargs, run_index=run_index)
+    if successfully_saved:
+        save_index(results_dir, run_index=run_index)
 
 
 def save_results_dict(results_dir: str, results_dict: dict, run_index=0):
     """
-    Creates an npy file for each key in the dictionary. If the file already exists, it appeds to the file.
+    Creates a npy file for each key in the dictionary. If the file already exists, it appends to the file.
     :param results_dir: (str) path to the directory to save the results to
     :param results_dict: (dict) each key is going to be used as a directory name, use descriptive names
     :param run_index: (int) index of the run
+    :returns: (bool) True if all the results were saved successfully
     """
-    attempts = 10
+    successfully_saved = True
+    attempts = 100
     for results_name, results in results_dict.items():
         temp_results = results if not is_tensor(results) else results.cpu().numpy()
         temp_path = os.path.join(results_dir, results_name)
         os.makedirs(temp_path, exist_ok=True)
         results_path = os.path.join(temp_path, "index-" + str(run_index) + ".npy")
+        temp_success_check = False
         for i in range(attempts):
             try:
                 np.save(results_path, temp_results)
                 np.load(results_path)
+                temp_success_check = True
+                print("{0} was successfully saved!".format(results_name))
                 break
             except ValueError:
                 print("Attempt number: {0}".format(i + 1))
                 print("Something went wrong when storing results at:\n\t{0}".format(results_path))
-        # np.save(os.path.join(temp_path, "index-" + str(run_index) + ".npy"), temp_results)
-        print("{0} was successfully saved!".format(results_name))
+        successfully_saved = (successfully_saved and temp_success_check)
+    return successfully_saved
 
 
 def save_index(results_dir: str, run_index: int):
@@ -85,9 +91,16 @@ def save_index(results_dir: str, run_index: int):
         index_array = np.append(index_array, run_index)
     else:
         index_array = np.array(run_index)
-
-    np.save(idx_file_path, index_array)
-    print("Index successfully saved!")
+    attempts = 100
+    for i in range(attempts):
+        try:
+            np.save(idx_file_path, index_array)
+            np.load(idx_file_path)
+            print("Index successfully saved!")
+            break
+        except ValueError:
+            print("Attempt number: {0}".format(i + 1))
+            print("Something went wrong when storing results at:\n\t{0}".format(idx_file_path))
 
 
 def write_slurm_file(slurm_config: dict, exps_config: list, exp_wrapper: str, exp_dir: str, exp_name: str, job_number=0):
