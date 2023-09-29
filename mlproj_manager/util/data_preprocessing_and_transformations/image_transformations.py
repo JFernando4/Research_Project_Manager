@@ -67,6 +67,67 @@ class RandomGaussianNoise(object):
         return new_sample
 
 
+class RandomHorizontalFlip(object):
+    """ Randomly flips and image horizontally """
+
+    def __init__(self, p=0.5):
+        """
+        :param p: probability of randomly flipping the image
+        """
+        self.flipper = transforms.RandomHorizontalFlip(p=p)
+
+    def __call__(self, sample: dict):
+        """
+        Randomly flips the image in a sample
+        :param sample: a dictionary that contains an "image" key corresponding to a torch tensor value
+        :return: same dictionary as sample but with a nosiy image
+        """
+        new_sample = {**sample}
+        new_sample["image"] = self.flipper(sample["image"])
+        return new_sample
+
+
+class RandomVerticalFlip(object):
+    """ Randomly flips and image horizontally """
+
+    def __init__(self, p=0.5):
+        """
+        :param mean: float or int corresponding to the mean of the distribution
+        :param stddev: float or int corresponding to the standard deviations of the distribution
+        """
+        self.flipper = transforms.RandomVerticalFlip(p=p)
+
+    def __call__(self, sample: dict):
+        """
+        Randomly flips the image in a sample
+        :param sample: a dictionary that contains an "image" key corresponding to a torch tensor value
+        :return: same dictionary as sample but with a nosiy image
+        """
+        new_sample = {**sample}
+        new_sample["image"] = self.flipper(sample["image"])
+        return new_sample
+
+
+class RandomRotator(object):
+    """ Randomly flips and image horizontally """
+
+    def __init__(self, degrees=(0, 45)):
+        """
+        :param degrees: (tuple) range of degrees to randomly rotate to
+        """
+        self.rotator = transforms.RandomRotation(degrees=degrees)
+
+    def __call__(self, sample: dict):
+        """
+        Randomly flips the image in a sample
+        :param sample: a dictionary that contains an "image" key corresponding to a torch tensor value
+        :return: same dictionary as sample but with a nosiy image
+        """
+        new_sample = {**sample}
+        new_sample["image"] = self.rotator(sample["image"])
+        return new_sample
+
+
 class RandomErasing(object):
 
     """ Erases a square at a random position in an image """
