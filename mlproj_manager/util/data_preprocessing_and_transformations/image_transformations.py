@@ -131,14 +131,17 @@ class RandomRotator(object):
 class RandomErasing(object):
 
     """ Erases a square at a random position in an image """
-    def __init__(self, scale=(0.2, 0.33), ratio=(0.3, 3.3), value=0):
+    def __init__(self, scale=(0.2, 0.33), ratio=(0.3, 3.3), value=0, swap_colors: bool = False):
         """
         Parameter descriptions as in: https://pytorch.org/vision/stable/transforms.html
         :param scale: (tuple, (float, float)) range of proportion of erased area against input image.
         :param ratio: (tuple, (float, float)) range of aspect ratio of erased area.
         :param value: (float) the replacement value for pixels or (3D tuple) with a replacement value for each channel
+        :param swap_colors: (bool) whether to reshape from HxWxC to CxHxW when performing the transformation, only
+                            relevant is value is a tuple
         """
 
+        self.swap_colors = swap_colors
         self.eraser = transforms.RandomErasing(p=1.0, scale=scale, ratio=ratio, value=value, inplace=False)
 
     def __call__(self, sample: dict):
@@ -148,7 +151,12 @@ class RandomErasing(object):
         :return: same dictionary as sample but with an empty squared somewhere in the image
         """
         new_sample = {**sample}
-        new_sample["image"] = self.eraser(new_sample["image"])
+        if self.swap_colors:
+            new_image = torch.permute(new_sample["image"], (2, 0, 1))
+            erased_image = self.eraser(new_image)
+            new_sample["image"] = torch.permute(erased_image, (1, 2, 0))
+        else:
+            new_sample["image"] = self.eraser(new_sample["image"])
         return new_sample
 
 
