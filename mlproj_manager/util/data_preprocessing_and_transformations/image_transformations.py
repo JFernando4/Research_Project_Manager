@@ -131,14 +131,15 @@ class RandomRotator(object):
 class RandomErasing(object):
 
     """ Erases a square at a random position in an image """
-    def __init__(self, scale=(0.2, 0.33), ratio=(0.3, 3.3)):
+    def __init__(self, scale=(0.2, 0.33), ratio=(0.3, 3.3), value=0):
         """
         Parameter descriptions as in: https://pytorch.org/vision/stable/transforms.html
         :param scale: (tuple, (float, float)) range of proportion of erased area against input image.
         :param ratio: (tuple, (float, float)) range of aspect ratio of erased area.
+        :param value: (float) the replacement value for pixels or (3D tuple) with a replacement value for each channel
         """
 
-        self.eraser = transforms.RandomErasing(p=1.0, scale=scale, ratio=ratio, value=0, inplace=False)
+        self.eraser = transforms.RandomErasing(p=1.0, scale=scale, ratio=ratio, value=value, inplace=False)
 
     def __call__(self, sample: dict):
         """
