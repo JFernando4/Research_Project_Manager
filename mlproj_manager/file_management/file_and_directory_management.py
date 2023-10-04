@@ -130,6 +130,8 @@ def write_slurm_file(slurm_config: dict, exps_config: list, exp_wrapper: str, ex
         job_file.writelines("#SBATCH --account={0}\n".format(slurm_config["account"]))
         if "gpus-per-node" in slurm_config.keys():
             job_file.writelines("#SBATCH --gpus-per-node={0}\n".format(slurm_config["gpus-per-node"]))
+        if "nodes" in slurm_config.keys():
+            job_file.writelines("#SBATCH --nodes={0}\n".format(slurm_config["nodes"]))
 
         job_file.writelines("export PYTHONPATH={0}\n".format(slurm_config["main_dir"]))
         job_file.writelines("source {0}/venv/bin/activate\n".format(slurm_config["main_dir"]))
