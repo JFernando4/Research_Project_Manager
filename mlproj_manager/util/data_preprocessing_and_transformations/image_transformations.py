@@ -160,6 +160,36 @@ class RandomErasing(object):
         return new_sample
 
 
+class GrayScale(object):
+
+    """ Transforms the image to a grayscale """
+    def __init__(self, num_output_channels: int = 3, swap_colors: bool = False):
+        """
+        Parameter descriptions as in: https://pytorch.org/vision/stable/transforms.html
+        :param num_output_channels: (int) number of expected output channels for the image
+        :param swap_colors: (bool) whether to reshape from HxWxC to CxHxW when performing the transformation, only
+                            relevant is value is a tuple
+        """
+
+        self.swap_colors = swap_colors
+        self.grayscaler = transforms.Grayscale(num_output_channels=num_output_channels)
+
+    def __call__(self, sample: dict):
+        """
+        Zeros out a square in the image at a random position
+        :param sample: a dictionary that contains an "image" key corresponding to a torch tensor value
+        :return: same dictionary as sample but with an empty squared somewhere in the image
+        """
+        new_sample = {**sample}
+        if self.swap_colors:
+            new_image = torch.permute(new_sample["image"], (2, 0, 1))
+            grayscale_image = self.grayscaler(new_image)
+            new_sample["image"] = torch.permute(grayscale_image, (1, 2, 0))
+        else:
+            new_sample["image"] = self.grayscaler(new_sample["image"])
+        return new_sample
+
+
 class Permute(object):
 
     """ Permutes all the pixels in an image according to the given index array"""
