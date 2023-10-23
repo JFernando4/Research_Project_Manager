@@ -208,6 +208,23 @@ class Permute(object):
         return new_sample
 
 
+class Normalize(object):
+
+    """ Centers and scales each channel of an image by the given mean and standard deviation """
+    def __init__(self, mean: tuple, std: tuple):
+        """
+        :param mean: tuple of means, one per channel
+        :param std: tuple of standard deviations, one per channel
+        """
+        self.normalizer = transforms.Normalize(mean=mean, std=std)
+
+    def __call__(self, sample: dict):
+        new_sample = {**sample}
+        normalize_image = self.normalizer(sample["image"])
+        new_sample["image"] = normalize_image
+        return new_sample
+
+
 def main():
     import matplotlib.pyplot as plt
 

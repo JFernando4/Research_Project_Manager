@@ -5,6 +5,7 @@ Helper functions for normalizing data
 import numpy as np
 import torch
 
+
 def normalize(data, norm_type: str, **kwargs):
     """
     Normalizes the given data according to the specified type
