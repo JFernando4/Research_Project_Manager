@@ -109,7 +109,7 @@ class RandomVerticalFlip(object):
 
 
 class RandomRotator(object):
-    """ Randomly flips and image horizontally """
+    """ Randomly rotates an image by certain number of degrees """
 
     def __init__(self, degrees=(0, 45)):
         """
@@ -125,6 +125,30 @@ class RandomRotator(object):
         """
         new_sample = {**sample}
         new_sample["image"] = self.rotator(sample["image"])
+        return new_sample
+
+
+class RandomCrop(object):
+    """ Pads an image by a given number of pixels and then randomly crops the image to the original shape """
+
+    def __init__(self, size: int, padding, padding_mode="reflect"):
+        """
+        :param size: (int or tuple) if int crops the image to (size, size), if tuple crops the image to (h, w) where h
+                     and w are the first and second entry in the tuple
+        :param padding (int or tuple): number of pixels to pad with on each side of the image
+        :param padding_mode (str): padding mode (see torchvision documentation),
+                                   options: "constant", "edge", "reflect", and "symmetric"
+        """
+        self.cropper = transforms.RandomCrop(size=size, padding=padding, padding_mode=padding_mode)
+
+    def __call__(self, sample: dict):
+        """
+        Randomly flips the image in a sample
+        :param sample: a dictionary that contains an "image" key corresponding to a torch tensor value
+        :return: same dictionary as sample but with a nosiy image
+        """
+        new_sample = {**sample}
+        new_sample["image"] = self.cropper(sample["image"])
         return new_sample
 
 
@@ -223,6 +247,8 @@ class Normalize(object):
         normalize_image = self.normalizer(sample["image"])
         new_sample["image"] = normalize_image
         return new_sample
+
+
 
 
 def main():
