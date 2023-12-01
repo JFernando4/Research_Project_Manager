@@ -1,5 +1,6 @@
 # for directory management
-from .file_and_directory_management import get_experiment_dir, get_file_paths_that_contain_keywords, get_indices
+from .file_and_directory_management import get_experiment_dir, get_file_paths_that_contain_keywords, get_indices, \
+    store_object_with_several_attempts
 # for saving and writing files
 from .file_and_directory_management import save_experiment_results, save_results_dict, save_index, write_slurm_file, \
     save_experiment_config_file

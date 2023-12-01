@@ -1,6 +1,9 @@
 import os
 import numpy as np
 import json
+import pickle
+
+import torch
 from torch import is_tensor
 from mlproj_manager.file_management.experiment_management import get_dims_and_dtype_of_npy_file
 
@@ -231,6 +234,53 @@ def get_file_paths_that_contain_keywords(dir_path: str, keyword_tuple: tuple):
             file_paths.append(file_path)
 
     return file_paths
+
+
+def store_object_with_several_attempts(object_to_store, store_path: str, storing_format: str, num_attempts: int = 10,
+                                       verbose: bool = True):
+    """
+    Attempts to store an object in memory several times until it can be successfully stored and loaded.
+    Note: these are some things to watch out for when using this function
+        - the script has permission to write onto the given path
+        - that the path is valid
+        - that the object can be stored using the chosen format
+        - that there's enough diskspace to store the object
+        - that there are no collision issues if using multi-threading and storing onto the same file
+
+    :param object_to_store: some python object to store in memory
+    :param store_path: path where to store the object
+    :param storing_format: string indicating whether to use numpy, torch, or pickle to store the object.
+                           choices: ["pickle", "numpy", "torch"]
+    :param num_attempts: number of attempts used to store the object
+    :param verbose: indicates whether to print status messages
+    return: (bool) True if the object was store successfully, otherwise False
+    """
+
+    assert storing_format in ["pickle", "numpy", "torch"]
+
+    successfully_saved = False
+    for i in range(num_attempts):
+        try:
+            if storing_format == "numpy":
+                np.save(store_path, object_to_store)
+                np.load(store_path)
+            elif storing_format == "torch":
+                torch.save(object_to_store, store_path)
+                torch.load(store_path)
+            else:
+                with open(store_path, mode="wb") as storing_file:
+                    pickle.dump(object_to_store, storing_file)
+                with open(store_path, mode="rb") as storing_file:
+                    pickle.load(storing_file)
+            successfully_saved = True
+            break
+        except ValueError:
+            if verbose:
+                print("Something went wrong on attempt number {0} when storing or loading the file."
+                      "Attempting again...".format(i + 1))
+        if verbose:
+            print("Couldn't store the file after {0} attempts. Proceed with caution!".format(num_attempts))
+    return successfully_saved
 
 
 # ---*---*---*---*---*---*--- For loading files ---*---*---*---*---*---*--- #
