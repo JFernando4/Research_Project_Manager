@@ -13,10 +13,11 @@ from mlproj_manager.util.data_preprocessing_and_transformations import normalize
 from mlproj_manager.definitions import IMAGENET_DATA_PATH
 
 
-class ImageNetDataSet(CustomDataSet):
+class TinyImageNetDataSet(CustomDataSet):
     """
-    ImageNet 32x32 dataset.
-    Same dataset ase the one used in the Nature paper: https://www.nature.com/articles/s41586-024-07711-7
+    Creates a torchvision dataset of the Tiny Imagenet dataset.
+    Tiny Imagenet is a smaller version of the original Imagenet dataset, with 200 classes and 550 images per class,
+    500 training and 50 testing images. The images are 64x64 pixels.
     """
 
     def __init__(self,
@@ -44,9 +45,10 @@ class ImageNetDataSet(CustomDataSet):
         :param use_torch (bool, optional): if true, uses torch tensors to represent the data, otherwise, uses np array
         :param flatten: whether to flatten each image
         """
-        assert "classes" in os.listdir(root_dir), "No data found in the specified directory. You can download the data from here: https://drive.google.com/file/d/1i0ok3LT5_mYmFWaN7wlkpHsitUngGJ8z/view"
-        super().__init__(os.path.join(root_dir, "classes"))
-        assert all([i <= 999 for i in classes]), "This version of ImageNet only has 1,000 different classes."
+        if "tiny_imagenet_data" not in os.listdir(root_dir):
+            self.download_and_format_data(root_dir)
+        super().__init__(os.path.join(root_dir, "tiny_imagenet_data"))
+        assert all([i <= 199 for i in classes]), "This version of ImageNet only has 200 different classes."
         self.train = train
         self.transform = transform
         self.classes = classes
@@ -55,12 +57,53 @@ class ImageNetDataSet(CustomDataSet):
         self.use_torch = use_torch
         self.flatten = flatten
 
-        self.train_images_per_class = 600
-        self.test_images_per_class = 100
+        self.train_images_per_class = 500
+        self.test_images_per_class = 50
 
         self.train_data, self.test_data = self.load_data()
         self.preprocess_data()
         self.current_data = self.train_data if self.train else self.test_data
+
+        # constants
+        self.avg_px_val = 112.72555808623343
+        self.stddev_px_val = 70.8432890236168
+        self.max_abs_px_val = 255
+        self.avg_channel_val_after_dividing_by_max = (0.48043, 0.44820, 0.39756)
+        self.stddev_channel_val_after_dividing_by_max = (0.27644, 0.26889, 0.28167)
+
+    @staticmethod
+    def download_and_format_data(root_dir):
+        """
+        Downloads the data using the datasets package from huggingface and formats it into a numpy array and saves
+        those arrays in a directory called "tiny_imagenet_data" in the root directory
+        """
+        print("Downloading and formatting data. This step requires internet connection and the datasests>=2.18 package from huggingface.")
+        from datasets import load_dataset
+        from tqdm import tqdm
+        train_tiny_imagenet = load_dataset('Maysee/tiny-imagenet', split='train').with_format("torch")
+        valid_tiny_imagenet = load_dataset('Maysee/tiny-imagenet', split='valid').with_format("torch")
+
+        os.makedirs(os.path.join(root_dir, "tiny_imagenet_data"), exist_ok=True)
+
+        images = [[] for _ in range(200)]
+        grayscale = [0 for _ in range(200)]
+        for dataset_name in ["train", "valid"]:
+            dataset = train_tiny_imagenet if dataset_name == "train" else valid_tiny_imagenet
+            for i in tqdm(range(len(dataset)), desc=f"Formatting {dataset_name} data"):
+                idx = dataset[i]["label"].item()
+                temp_image = dataset[i]["image"]
+                if len(temp_image.shape) != 3:
+                    grayscale[idx] += 1
+                    temp_image = temp_image.unsqueeze(2).repeat(1, 1, 3)
+                images[idx].append(temp_image.numpy())
+
+        for i, num_grayscale in enumerate(grayscale):
+            if num_grayscale > 0:
+                print(f"Class {i} had {num_grayscale} grayscale images. They were converted to RGB.")
+
+        for i in tqdm(range(len(images)), desc="Storing data"):
+            temp_array = np.array(images[i])
+            np.save(os.path.join(root_dir, "tiny_imagenet_data", str(i) + ".npy"), temp_array)
 
     def load_data(self):
         """
@@ -88,7 +131,6 @@ class ImageNetDataSet(CustomDataSet):
 
         return train_data, test_data
 
-
     def preprocess_data(self):
         """
         Reshapes the data into the correct dimensions, converts it to the correct type, and normalizes the data if specified
@@ -104,9 +146,9 @@ class ImageNetDataSet(CustomDataSet):
 
         # normalize train data
         # these three statistics below were computed using the entire dataset
-        avg_px_val = 0.0003272946784095237
-        stddev_px_val = 0.26002973067440316
-        max_abs_px_val = 0.6303861141204834
+        avg_px_val = 112.72555808623343
+        stddev_px_val = 70.8432890236168
+        max_abs_px_val = 255
         defaults = {"norm_type": self.image_norm_type, "avg": avg_px_val, "stddev": stddev_px_val, "max_val": max_abs_px_val}
         self.train_data["data"] = normalize(self.train_data["data"], **defaults)
         self.test_data["data"] = normalize(self.test_data["data"], **defaults)
@@ -189,17 +231,20 @@ def main():
             plt.tight_layout()
             ax.set_title('Sample #{}'.format(idx))
             ax.axis('off')
-            image = (sample["image"] + 1) / 2
-            plt.imshow(image.reshape(32, 32, 3))
+            plt.imshow(sample["image"])
         plt.show()
         plt.close()
 
     # initialize data set with only a few classes and plot
-    imagenet = ImageNetDataSet(train=True, classes=[1, 4], image_normalization=None, label_preprocessing="one-hot")
+    imagenet = TinyImageNetDataSet(train=True, classes=[1, 4], image_normalization=None, label_preprocessing="one-hot")
     plot_four_samples(imagenet)
 
     # change the current available classes and plot again
-    imagenet.load_new_classes([310, 23])
+    imagenet.load_new_classes([25, 199])
+    plot_four_samples(imagenet)
+
+    # initialize data set with only a few classes and divided by max channel value and plot
+    imagenet = TinyImageNetDataSet(train=True, classes=[0, 100], image_normalization="max", label_preprocessing="one-hot")
     plot_four_samples(imagenet)
 
 
