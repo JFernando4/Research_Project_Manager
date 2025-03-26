@@ -121,10 +121,10 @@ class TinyImageNetDataSet(CustomDataSet):
             x_test.append(new_x[self.train_images_per_class:])
             y_train.append(np.array([idx] * self.train_images_per_class))
             y_test.append(np.array([idx] * self.test_images_per_class))
-        x_train = torch.tensor(np.concatenate(x_train))
-        y_train = torch.from_numpy(np.concatenate(y_train))
-        x_test = torch.tensor(np.concatenate(x_test))
-        y_test = torch.from_numpy(np.concatenate(y_test))
+        x_train = np.concatenate(x_train).astype(np.float32)
+        y_train = np.concatenate(y_train).astype(np.float32)
+        x_test = np.concatenate(x_test).astype(np.float32)
+        y_test = np.concatenate(y_test).astype(np.float32)
 
         train_data = {"data": x_train, "labels": y_train}
         test_data = {"data": x_test, "labels": y_test}
@@ -140,10 +140,6 @@ class TinyImageNetDataSet(CustomDataSet):
             self.train_data["data"] = self.train_data["data"].reshape(self.train_data["data"].shape[0], -1)
             self.test_data["data"] = self.test_data["data"].reshape(self.test_data["data"].shape[0], -1)
 
-        if self.use_torch:
-            self.train_data["data"] = torch.tensor(self.train_data["data"], dtype=torch.float32)
-            self.test_data["data"] = torch.tensor(self.test_data["data"], dtype=torch.float32)
-
         # normalize train data
         # these three statistics below were computed using the entire dataset
         avg_px_val = 112.72555808623343
@@ -157,10 +153,10 @@ class TinyImageNetDataSet(CustomDataSet):
         self.test_data["labels"] = preprocess_labels(self.test_data["labels"], preprocessing_type=self.label_preprocessing)
 
         if self.use_torch:
-            self.train_data["data"] = torch.tensor(self.train_data["data"], dtype=torch.float32)
-            self.train_data["labels"] = torch.tensor(self.train_data["labels"], dtype=torch.float32)
-            self.test_data["data"] = torch.tensor(self.test_data["data"], dtype=torch.float32)
-            self.test_data["labels"] = torch.tensor(self.test_data["labels"], dtype=torch.float32)
+            self.train_data["data"] = torch.from_numpy(self.train_data["data"])
+            self.train_data["labels"] = torch.from_numpy(self.train_data["labels"])
+            self.test_data["data"] = torch.from_numpy(self.test_data["data"])
+            self.test_data["labels"] = torch.from_numpy(self.test_data["labels"])
 
     def load_new_classes(self, classes: list):
         """
@@ -231,12 +227,14 @@ def main():
             plt.tight_layout()
             ax.set_title('Sample #{}'.format(idx))
             ax.axis('off')
-            plt.imshow(sample["image"])
+            image = np.int64(sample["image"]) if imagenet_data.image_norm_type is None else sample["image"]
+            plt.imshow(image)
         plt.show()
         plt.close()
 
     # initialize data set with only a few classes and plot
-    imagenet = TinyImageNetDataSet(train=True, classes=[1, 4], image_normalization=None, label_preprocessing="one-hot")
+    imagenet = TinyImageNetDataSet(train=True, classes=[1, 4], image_normalization=None, label_preprocessing="one-hot",
+                                   use_torch=True)
     plot_four_samples(imagenet)
 
     # change the current available classes and plot again
@@ -244,7 +242,8 @@ def main():
     plot_four_samples(imagenet)
 
     # initialize data set with only a few classes and divided by max channel value and plot
-    imagenet = TinyImageNetDataSet(train=True, classes=[0, 100], image_normalization="max", label_preprocessing="one-hot")
+    imagenet = TinyImageNetDataSet(train=True, classes=[0, 100], image_normalization="max", label_preprocessing="one-hot",
+                                   use_torch=False)
     plot_four_samples(imagenet)
 
 
